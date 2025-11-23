@@ -1,0 +1,57 @@
+# --- Visual Studio Build Output & Intermediate Files ---
+# 디버그 및 릴리즈 빌드 폴더 제외
+Debug/
+Release/
+x64/
+x86/
+build/
+bin/
+obj/
+
+# --- Local User Specific Files ---
+# 사용자별 설정 파일 (절대 올리면 안 됨)
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# --- IntelliSense & Browsing Database ---
+# 인텔리센스 데이터베이스 (용량이 매우 큼)
+.vs/
+*.ipch
+*.aps
+*.ncb
+*.opensdf
+*.sdf
+*.cachefile
+*.location
+*.lo
+
+# --- Build Results ---
+# 실행 파일 및 라이브러리 결과물 (소스만 관리하고 싶을 때)
+*.exe
+*.dll
+*.lib
+*.pdb
+*.ilk
+*.exp
+*.map
+
+# --- Visual Studio Code (혹시 사용한다면) ---
+.vscode/
+
+# --- OS Specific ---
+# 윈도우 썸네일 및 맥 시스템 파일
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# --- C++ Specific ---
+# 컴파일된 오브젝트 파일 등
+*.obj
+*.res
+*.pch
+*.idb
+*.tlog
+*.lastbuildstate
