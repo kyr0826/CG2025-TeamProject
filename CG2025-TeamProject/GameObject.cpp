@@ -4,6 +4,7 @@ namespace Objects {
 	GameObject::GameObject(std::string name, Physics_Body* physics, Model* model, Shader* shader) :
 		name{ name }, physics{ physics }, model{ model }, shader{ shader } {
 		model_scale = glm::vec3(1.0f);
+		origin_model_scale = model_scale;
 		model_color = glm::vec3(.85f);
 		model->SetShader(shader);
 	}
@@ -25,5 +26,25 @@ namespace Objects {
 		model->SetModelMatrix(T * R * S);
 		camera.Matrix(45.0f, 0.1f, 100.0f, *shader);
 		model->Render();
+	}
+
+	void GameObject::PlayMergeAnimation() {
+		animate_time = MERGE_ANIMATION_TIME;
+	}
+
+	void GameObject::UpdateState(float dt) {
+		if (animate_time > 0.0f) {
+			animate_time -= dt;
+			if (animate_time < 0.0f) {
+				animate_time = 0.0f;
+				model_scale = origin_model_scale;
+			}
+
+			//     t : 0	-> 0.5	-> 1
+			// scale : 0.25 -> 1.25 -> 1
+			float t = std::min(1.0f,1.0f - (animate_time / MERGE_ANIMATION_TIME));
+			float scaleFactor = 0.25f + glm::sin(t * ((M_PI / 2.0f) * 1.45f));
+			model_scale = origin_model_scale * scaleFactor;
+		}
 	}
 }

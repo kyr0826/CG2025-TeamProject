@@ -27,6 +27,7 @@ namespace Physics {
 				if (glm::length(body->vel) > maxSpeed)
 					body->vel = glm::normalize(body->vel) * maxSpeed;
 
+				ball->UpdateState(subDt);
 				body->UpdateState(subDt);
 			}
 

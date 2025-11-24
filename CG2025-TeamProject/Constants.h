@@ -1,25 +1,28 @@
 #pragma once
-// À©µµ¿ì
+// ìœˆë„ìš° ìƒìˆ˜
 const int WINDOW_WIDTH				= 800;
 const int WINDOW_HEIGHT				= 600;
 
-// °è»ê¿ë
+// ê³„ì‚°ìš©
 const float M_PI					= 3.14159265358979323846f;
 const float GRAVITY					= 9.81f;
 
-// Ä«¸Ş¶ó
+// ì¹´ë©”ë¼ ìƒìˆ˜
 const float CAMERA_DISTANCE			= 5.0f;
 const float CAMERA_ROTATION_SPEED	= 5.0f;
 const float INITIAL_CAMERA_Y		= 3.0f;
 
-// Á¶¸í
+// ì¡°ëª… ìƒìˆ˜
 const glm::vec3 LIGHT_POSITION		= glm::vec3(0.0f, 5.0f, 0.0f);
 const glm::vec3 LIGHT_COLOR			= glm::vec3(1.0f, 1.0f, 1.0f);
 
-// ¹ß»ç °ü·Ã »ó¼ö
+// ë°œì‚¬ ìƒìˆ˜
 const float LAUNCH_FORCE_MIN		= 10.0f;
 const float LAUNCH_FORCE_MAX		= 30.0f;
-const int TRAJECTORY_POINTS			= 30;		// ±ËÀû Á¡ °³¼ö
-const float TRAJECTORY_TIME_STEP	= 0.05f;	// Á¡ »çÀÌÀÇ ½Ã°£ °£°İ
+const int TRAJECTORY_POINTS			= 30;		// ê¶¤ì  ì  ê°œìˆ˜
+const float TRAJECTORY_TIME_STEP	= 0.05f;	// ì  ì‚¬ì´ì˜ ì‹œê°„ ê°„ê²©
 const int TRAJECTORY_POINTS_COUNT	= 100;
 const float TRAJECTORY_STEP			= 0.03f;
+
+// ì• ë‹ˆë©”ì´ì…˜ ìƒìˆ˜
+const float MERGE_ANIMATION_TIME = 0.2f;		// ë³‘í•© ì• ë‹ˆë©”ì´ì…˜ ì‹œê°„

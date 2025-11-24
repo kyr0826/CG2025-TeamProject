@@ -1,4 +1,5 @@
 #pragma once
+#include <cmath>
 #include "Physics_Body.h"
 #include "Model.h"
 #include "Camera.h"
@@ -21,11 +22,18 @@ namespace Objects {
 		glm::vec3 GetScale() { return model_scale; }
 
 		void SetPosition(const glm::vec3& pos) { physics->pos = pos; }
-		void SetScale(const glm::vec3& scale) { model_scale = scale; }
+		void SetScale(const glm::vec3& scale) { 
+			model_scale = scale; 
+			origin_model_scale = model_scale;
+		}
 		void SetAcceleration(const glm::vec3& acc) { physics->acc = acc; }
 		void SetModelColor(const glm::vec3& color) { model_color = color; }
 
 		void RenderModel(Camera& camera);
+
+		void PlayMergeAnimation();
+
+		void UpdateState(float dt);
 
 	private:
 		Physics_Body* physics;
@@ -33,6 +41,9 @@ namespace Objects {
 		Shader* shader;
 		std::string name;
 		glm::vec3 model_scale;
+		glm::vec3 origin_model_scale;
 		glm::vec3 model_color;
+
+		float animate_time{};
 	};
 }

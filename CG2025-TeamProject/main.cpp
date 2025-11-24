@@ -118,7 +118,7 @@ void InitResources() {
 	common_sphere_model = new Model("Sphere.obj");
 	common_sphere_model->Recenter();
 
-	common_sphere_radius = common_sphere_model->GetExactRadius() * 0.95f;
+	common_sphere_radius = common_sphere_model->GetExactRadius() * 0.98f;
 }
 
 void InitFruitData() {
@@ -217,6 +217,8 @@ GLvoid Keyboard(unsigned char key, int x, int y) {
 			readyFruit->SetAcceleration(glm::vec3(0, -GRAVITY, 0));
 
 			physicsWorld->AddBall(readyFruit);
+
+			// TODO: 재장전 조건을 과일의 속도가 n이하가 될 때로 변경
 			readyFruit = nullptr;
 			SpawnReadyFruit(); // 재장전
 		}
@@ -327,6 +329,7 @@ void OnFruitMerge(int nextLevel, glm::vec3 pos) {
 	newFruit->SetScale(glm::vec3(info.scale));
 	newFruit->SetModelColor(info.color);
 	newFruit->fruitLevel = nextLevel;
+	newFruit->PlayMergeAnimation();
 
 	physicsWorld->AddBall(newFruit);
 	renderObjects.push_back(newFruit);
