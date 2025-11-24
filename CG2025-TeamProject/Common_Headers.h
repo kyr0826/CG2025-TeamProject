@@ -6,13 +6,13 @@
 #include <algorithm>
 #include <cmath>
 
-#include <gl/glew.h>
-#include <gl/freeglut.h>
-#include <gl/freeglut_ext.h>
+#include "../Dependencies/glew/include/GL/glew.h"
+#include "../Dependencies/freeglut/include/GL/freeglut.h"
+#include "../Dependencies/freeglut/include/GL/freeglut_ext.h"
 
-#include <gl/glm/glm.hpp>
-#include <gl/glm/ext.hpp>
-#include <gl/glm/gtc/matrix_transform.hpp>
-#include <gl/glm/gtc/type_ptr.hpp>
+#include "../Dependencies/glm/glm.hpp"
+#include "../Dependencies/glm/ext.hpp"
+#include "../Dependencies/glm/gtc/matrix_transform.hpp"
+#include "../Dependencies/glm/gtc/type_ptr.hpp"
 
 #include "Constants.h"
