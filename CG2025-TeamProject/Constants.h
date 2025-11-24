@@ -19,10 +19,9 @@ const glm::vec3 LIGHT_COLOR			= glm::vec3(1.0f, 1.0f, 1.0f);
 // 발사 상수
 const float LAUNCH_FORCE_MIN		= 10.0f;
 const float LAUNCH_FORCE_MAX		= 30.0f;
-const int TRAJECTORY_POINTS			= 30;		// 궤적 점 개수
+const int TRAJECTORY_POINTS_COUNT	= 100;		// 궤적 점 개수
 const float TRAJECTORY_TIME_STEP	= 0.05f;	// 점 사이의 시간 간격
-const int TRAJECTORY_POINTS_COUNT	= 100;
-const float TRAJECTORY_STEP			= 0.03f;
+const float SPAWN_DELAY 			= 0.5f;		// 다음 과일 생성까지의 지연 시간
 
 // 애니메이션 상수
 const float MERGE_ANIMATION_TIME = 0.2f;		// 병합 애니메이션 시간

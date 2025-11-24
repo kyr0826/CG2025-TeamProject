@@ -13,7 +13,7 @@ struct FruitInfo {
 	float mass;
 };
 
-// ³×ÀÓ½ºÆäÀÌ½º »ç¿ë
+// ë„¤ì„ìŠ¤í˜ì´ìŠ¤ ì‚¬ìš©
 using namespace Graphics;
 using namespace Objects;
 using namespace Physics;
@@ -37,7 +37,7 @@ void InitResources();
 void OnFruitMerge(int nextLevel, glm::vec3 pos);
 void OnObjectRemove(GameObject* obj);
 
-// Àü¿ª º¯¼ö
+// ì „ì—­ ë³€ìˆ˜
 Shader* common_shader = nullptr;
 Camera* main_camera = nullptr;
 PhysicsWorld* physicsWorld = nullptr;
@@ -48,18 +48,19 @@ float common_sphere_radius = 0.0f;
 std::vector<GameObject*> renderObjects;
 std::vector<FruitInfo> fruitTypes;
 
-// Ä«¸Ş¶ó Á¦¾î º¯¼ö
+// ì¹´ë©”ë¼ ì œì–´ ë³€ìˆ˜
 float g_camera_y_rotation = 0.0f;
 float g_camera_distance = CAMERA_DISTANCE;
 
-// ¹ß»ç Á¦¾î º¯¼ö
-float g_launch_pitch = 55.0f;	// ¹ß»ç °¢µµ (³ô°Ô ´øÁ®¾ß Æ÷¹°¼±ÀÌ ¿¹»İ)
-float g_launch_yaw = 0.0f;		// Ä«¸Ş¶ó °øÀü °¢µµ
-float g_launch_force = 5.0f;	// ¹ß»ç Èû (Àû´çÈ÷ ¸Ö¸® ³¯¾Æ°¡µµ·Ï)
+// ë°œì‚¬ ì œì–´ ë³€ìˆ˜
+float g_launch_pitch = 54.0f;	// ë°œì‚¬ ê°ë„ (ë†’ê²Œ ë˜ì ¸ì•¼ í¬ë¬¼ì„ ì´ ì˜ˆì¨)
+float g_launch_yaw = 0.0f;		// ì¹´ë©”ë¼ ê³µì „ ê°ë„
+float g_launch_force = 5.0f;	// ë°œì‚¬ í˜ (ì ë‹¹íˆ ë©€ë¦¬ ë‚ ì•„ê°€ë„ë¡)
+float g_spawn_timer = 0.0f;		// ë‹¤ìŒ ê³¼ì¼ ìƒì„±ê¹Œì§€ì˜ ì‹œê°„ ì¹´ìš´í„°
 
 GameObject* readyFruit = nullptr;
 
-// ±ËÀû ·»´õ¸µ¿ë
+// ê¶¤ì  ë Œë”ë§ìš©
 std::vector<glm::vec3> trajectoryPoints;
 
 void main(int argc, char** argv) {
@@ -73,10 +74,10 @@ void main(int argc, char** argv) {
 
 	common_shader = new Shader("fragment.glsl", "vertex.glsl");
 
-	// Ä«¸Ş¶ó ÃÊ±â À§Ä¡ ¼³Á¤ (¾à°£ À§¿¡¼­ ¹Ù¶óº½)
+	// ì¹´ë©”ë¼ ì´ˆê¸° ìœ„ì¹˜ ì„¤ì • (ì•½ê°„ ìœ„ì—ì„œ ë°”ë¼ë´„)
 	main_camera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, glm::vec3(0, INITIAL_CAMERA_Y, g_camera_distance));
 
-	// ¹°¸® ¿ùµå »ı¼º
+	// ë¬¼ë¦¬ ì›”ë“œ ìƒì„±
 	physicsWorld = new PhysicsWorld();
 	physicsWorld->SetMergeCallback(OnFruitMerge);
 	physicsWorld->SetRemoveCallback(OnObjectRemove);
@@ -94,7 +95,7 @@ void main(int argc, char** argv) {
 	glutTimerFunc(16, Timer, 16);
 	glutMainLoop();
 
-	// Á¾·á ½Ã ¸Ş¸ğ¸® ÇØÁ¦
+	// ì¢…ë£Œ ì‹œ ë©”ëª¨ë¦¬ í•´ì œ
 	delete physicsWorld;
 	delete main_camera;
 	delete common_shader;
@@ -123,29 +124,29 @@ void InitResources() {
 
 void InitFruitData() {
 	fruitTypes.clear();
-	// ´Ü°è | ÀÌ¸§ | ½ºÄÉÀÏ | »ö»ó(RGB) | Áú·®(½ºÄÉÀÏ¿¡ ºñ·Ê)
+	// ë‹¨ê³„ | ì´ë¦„ | ìŠ¤ì¼€ì¼ | ìƒ‰ìƒ(RGB) | ì§ˆëŸ‰(ìŠ¤ì¼€ì¼ì— ë¹„ë¡€)
 
-	// 0. Ã¼¸®
+	// 0. ì²´ë¦¬
 	fruitTypes.push_back({ "Cherry", 0.15f, glm::vec3(0.8f, 0.0f, 0.0f), 1.0f });
-	// 1. µş±â
+	// 1. ë”¸ê¸°
 	fruitTypes.push_back({ "Strawberry", 0.23f, glm::vec3(1.0f, 0.2f, 0.2f), 2.0f });
-	// 2. Æ÷µµ
+	// 2. í¬ë„
 	fruitTypes.push_back({ "Grape", 0.32f, glm::vec3(0.6f, 0.2f, 0.8f), 3.0f });
-	// 3. ÇÑ¶óºÀ (±Ö)
+	// 3. í•œë¼ë´‰ (ê·¤)
 	fruitTypes.push_back({ "Hallabong", 0.40f, glm::vec3(1.0f, 0.6f, 0.0f), 4.0f });
-	// 4. °¨
+	// 4. ê°
 	fruitTypes.push_back({ "Persimmon", 0.50f, glm::vec3(1.0f, 0.4f, 0.0f), 5.0f });
-	// 5. »ç°ú
+	// 5. ì‚¬ê³¼
 	fruitTypes.push_back({ "Apple", 0.62f, glm::vec3(0.9f, 0.1f, 0.1f), 7.0f });
-	// 6. Âü¿Ü (³ë¶û)
+	// 6. ì°¸ì™¸ (ë…¸ë‘)
 	fruitTypes.push_back({ "Pear", 0.75f, glm::vec3(0.9f, 0.9f, 0.6f), 10.0f });
-	// 7. º¹¼ş¾Æ
+	// 7. ë³µìˆ­ì•„
 	fruitTypes.push_back({ "Peach", 0.90f, glm::vec3(1.0f, 0.7f, 0.8f), 13.0f });
-	// 8. ÆÄÀÎ¾ÖÇÃ
+	// 8. íŒŒì¸ì• í”Œ
 	fruitTypes.push_back({ "Pineapple", 1.10f, glm::vec3(0.9f, 0.8f, 0.2f), 18.0f });
-	// 9. ¸á·Ğ
+	// 9. ë©œë¡ 
 	fruitTypes.push_back({ "Melon", 1.35f, glm::vec3(0.5f, 0.9f, 0.5f), 25.0f });
-	// 10. ¼ö¹Ú
+	// 10. ìˆ˜ë°•
 	fruitTypes.push_back({ "Watermelon", 1.60f, glm::vec3(0.1f, 0.7f, 0.2f), 35.0f });
 }
 
@@ -174,25 +175,33 @@ GLvoid DrawScene() {
 }
 
 GLvoid Timer(int value) {
-	// 1. ¹°¸® ¿£Áø ¾÷µ¥ÀÌÆ®
+	if (g_spawn_timer > 0.0f) {
+		g_spawn_timer -= 0.016f;
+		if (g_spawn_timer < 0.0f) {
+			g_spawn_timer = 0.0f;
+			SpawnReadyFruit();
+		}
+	}
+
+	// 1. ë¬¼ë¦¬ ì—”ì§„ ì—…ë°ì´íŠ¸
 	physicsWorld->Step(0.016f);
 
-	// 2. Ä«¸Ş¶ó À§Ä¡ °»½Å (°øÀü)
+	// 2. ì¹´ë©”ë¼ ìœ„ì¹˜ ê°±ì‹  (ê³µì „)
 	main_camera->Position.x = sin(glm::radians(g_launch_yaw)) * g_camera_distance;
 	main_camera->Position.z = cos(glm::radians(g_launch_yaw)) * g_camera_distance;
 
-	// 3. ´ë±â ±¸½½(ReadyBall) À§Ä¡ µ¿±âÈ­
-	if (readyFruit) {
+	// 3. ëŒ€ê¸° êµ¬ìŠ¬(ReadyBall) ìœ„ì¹˜ ë™ê¸°í™”
+	if (readyFruit && g_spawn_timer == 0.0f) {
 		glm::vec3 launchPos = CalculateLaunchPosition();
 		readyFruit->SetPosition(launchPos);
 
-		// ´ë±â Áß¿£ ¹°¸® ¿µÇâ ¾È ¹ŞÀ½
+		// ëŒ€ê¸° ì¤‘ì—” ë¬¼ë¦¬ ì˜í–¥ ì•ˆ ë°›ìŒ
 		readyFruit->GetPhysicsBody()->vel = glm::vec3(0);
 		readyFruit->SetAcceleration(glm::vec3(0));
-	}
 
-	// 4. ±ËÀû °è»ê
-	CalculateTrajectory();
+		// ê¶¤ì  ê³„ì‚°
+		CalculateTrajectory();
+	}
 
 	glutPostRedisplay();
 	glutTimerFunc(16, Timer, 16);
@@ -209,7 +218,7 @@ GLvoid Keyboard(unsigned char key, int x, int y) {
 	{
 	case 'q': glutLeaveMainLoop(); return;
 
-	case 32: // Space: ¹ß»ç
+	case 32: // Space: ë°œì‚¬
 	{
 		if (readyFruit) {
 			Physics_Body* body = readyFruit->GetPhysicsBody();
@@ -217,20 +226,21 @@ GLvoid Keyboard(unsigned char key, int x, int y) {
 			readyFruit->SetAcceleration(glm::vec3(0, -GRAVITY, 0));
 
 			physicsWorld->AddBall(readyFruit);
-
-			// TODO: ÀçÀåÀü Á¶°ÇÀ» °úÀÏÀÇ ¼Óµµ°¡ nÀÌÇÏ°¡ µÉ ¶§·Î º¯°æ
+			g_spawn_timer = SPAWN_DELAY;
 			readyFruit = nullptr;
-			SpawnReadyFruit(); // ÀçÀåÀü
 		}
 	}
 	break;
 
-	case 'a': g_launch_yaw -= CAMERA_ROTATION_SPEED; break;
-	case 'd': g_launch_yaw += CAMERA_ROTATION_SPEED; break;
+	case 'a': 
+	case 'd':
+		g_launch_yaw += ((key == 'a') ? 1 : -1) * CAMERA_ROTATION_SPEED;
+		// TODO : íšŒì „ ì‚¬ìš´ë“œ ì¶œë ¥
+		break;
 
-		// °¢µµ Á¦ÇÑ (³Ê¹« ³·°Å³ª ³Ê¹« ³ôÁö ¾Ê°Ô)
-	case 'w': g_launch_pitch = std::min(g_launch_pitch + 2.0f, 85.0f); break;
-	case 's': g_launch_pitch = std::max(g_launch_pitch - 2.0f, 10.0f); break;
+		// ê°ë„ ì œí•œ (ë„ˆë¬´ ë‚®ê±°ë‚˜ ë„ˆë¬´ ë†’ì§€ ì•Šê²Œ)
+	case 'w': g_launch_pitch = std::min(g_launch_pitch + 2.0f, 81.0f); break;
+	case 's': g_launch_pitch = std::max(g_launch_pitch - 2.0f, 12.0f); break;
 	}
 }
 
@@ -255,7 +265,7 @@ glm::vec3 CalculateLaunchVelocity() {
 
 	float radPitch = glm::radians(g_launch_pitch);
 
-	// À§ÂÊÀ¸·Î ½î´Â º¤ÅÍ (Pitch Àû¿ë)
+	// ìœ„ìª½ìœ¼ë¡œ ì˜ëŠ” ë²¡í„° (Pitch ì ìš©)
 	glm::vec3 launchDir = horizontalDir * cos(radPitch) + glm::vec3(0, 1, 0) * sin(radPitch);
 
 	return glm::normalize(launchDir) * g_launch_force;
@@ -272,8 +282,8 @@ void CalculateTrajectory() {
 	trajectoryPoints.push_back(cur);
 
 	for (int i = 0; i < TRAJECTORY_POINTS_COUNT; ++i) {
-		vel += glm::vec3(0, -GRAVITY, 0) * TRAJECTORY_STEP;
-		cur += vel * TRAJECTORY_STEP;
+		vel += glm::vec3(0, -GRAVITY, 0) * TRAJECTORY_TIME_STEP;
+		cur += vel * TRAJECTORY_TIME_STEP;
 		trajectoryPoints.push_back(cur);
 		if (cur.y < -2.0f) break;
 	}
@@ -281,19 +291,20 @@ void CalculateTrajectory() {
 
 void DrawTrajectory() {
 	if (trajectoryPoints.size() < 2) return;
+	if (g_spawn_timer > 0.0f) return;
 
 	glUseProgram(0);
 
 	glLineWidth(4.0f);
-	glColor3f(.2f, .9f, 1.0f); // »¡°£»ö ¼±
+	glColor3f(.2f, .9f, 1.0f); // ë¹¨ê°„ìƒ‰ ì„ 
 
-	glBegin(GL_LINE_STRIP); // ²÷¾îÁöÁö ¾Ê´Â ¼±
+	glBegin(GL_LINE_STRIP); // ëŠì–´ì§€ì§€ ì•ŠëŠ” ì„ 
 	for (const auto& p : trajectoryPoints) {
 		glVertex3fv(glm::value_ptr(p));
 	}
 	glEnd();
 
-	glLineWidth(1.0f); // µÎ²² ¿øº¹
+	glLineWidth(1.0f); // ë‘ê»˜ ì›ë³µ
 }
 
 void SpawnReadyFruit() {
@@ -301,12 +312,12 @@ void SpawnReadyFruit() {
 
 	const FruitInfo& info = fruitTypes[level];
 
-	// ¹°¸® ¹Ùµğ »ı¼º (°øÀ¯µÈ ¹İÁö¸§ »ç¿ë)
+	// ë¬¼ë¦¬ ë°”ë”” ìƒì„± (ê³µìœ ëœ ë°˜ì§€ë¦„ ì‚¬ìš©)
 	Physics_Body* body = new Physics_Body(info.mass);
 	body->colliderRadius = common_sphere_radius;
 
-	// °ÔÀÓ ¿ÀºêÁ§Æ® »ı¼º (°øÀ¯ ¸ğµ¨ Àü´Ş)
-	// ÁÖÀÇ: GameObject ¼Ò¸êÀÚ¿¡¼­ modelÀ» deleteÇÏÁö ¾Êµµ·Ï ±¸ÇöµÇ¾î ÀÖ¾î¾ß ÇÔ
+	// ê²Œì„ ì˜¤ë¸Œì íŠ¸ ìƒì„± (ê³µìœ  ëª¨ë¸ ì „ë‹¬)
+	// ì£¼ì˜: GameObject ì†Œë©¸ìì—ì„œ modelì„ deleteí•˜ì§€ ì•Šë„ë¡ êµ¬í˜„ë˜ì–´ ìˆì–´ì•¼ í•¨
 	readyFruit = new GameObject(info.name, body, common_sphere_model, common_shader);
 
 	readyFruit->SetScale(glm::vec3(info.scale));
@@ -339,5 +350,5 @@ void OnFruitMerge(int nextLevel, glm::vec3 pos) {
 void OnObjectRemove(GameObject* obj) {
 	auto it = std::remove(renderObjects.begin(), renderObjects.end(), obj);
 	renderObjects.erase(it, renderObjects.end());
-	delete obj; // ¸Ş¸ğ¸® ÇØÁ¦
+	delete obj; // ë©”ëª¨ë¦¬ í•´ì œ
 }
