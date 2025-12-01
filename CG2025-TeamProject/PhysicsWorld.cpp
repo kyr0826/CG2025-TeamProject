@@ -1,4 +1,7 @@
 #include "PhysicsWorld.h"
+#include "EventSystem.h"
+
+using namespace Core;
 
 namespace Physics {
 	PhysicsWorld::PhysicsWorld() : dish(nullptr) {}
@@ -194,9 +197,9 @@ namespace Physics {
 
 		if (overlap > 0.0f) {
 			if (b1->fruitLevel != -1 && b1->fruitLevel == b2->fruitLevel) {
-				// ¸¶Áö¸· ·¹º§(¼ö¹Ú)Àº ÇÕÃÄÁöÁö ¾ÊÀ½ (º¸Åë »ç¶óÁö°Ô ÇÏ°Å³ª À¯Áö)
+				// ë§ˆì§€ë§‰ ë ˆë²¨(ìˆ˜ë°•)ì€ í•©ì³ì§€ì§€ ì•ŠìŒ (ë³´í†µ ì‚¬ë¼ì§€ê²Œ í•˜ê±°ë‚˜ ìœ ì§€)
 				if (b1->fruitLevel < 10) {
-					// º´ÇÕ ÀÌº¥Æ® µî·Ï
+					// ë³‘í•© ì´ë²¤íŠ¸ ë“±ë¡
 					MergeEvent ev;
 					ev.a = b1;
 					ev.b = b2;
@@ -208,6 +211,19 @@ namespace Physics {
 					mergeQueue.push_back(ev);
 					pendingRemoval.push_back(b1);
 					pendingRemoval.push_back(b2);
+
+					// 1. ì ìˆ˜: (ë‹¤ìŒ ë ˆë²¨ + 1) * 10ì 
+					int scoreToAdd = (ev.nextLevel + 1) * 10;
+					
+					EventSystem::GetInstance().PublishScore(scoreToAdd);
+
+					// 2. ì‚¬ìš´ë“œ: íŒ íš¨ê³¼ìŒ ì¬ìƒ ìš”ì²­
+					EventSystem::GetInstance().PublishSound("pop.wav");
+
+					// 3. ìˆ˜ë°•(ë ˆë²¨ 10) ì™„ì„± ì‹œ ê²Œì„ í´ë¦¬ì–´/ì¢…ë£Œ ì²˜ë¦¬ ì˜ˆì‹œ
+					if (ev.nextLevel == 10) {
+
+					}
 					return;
 				}
 			}
@@ -219,7 +235,8 @@ namespace Physics {
 			float vn = glm::dot(relVel, n);
 			if (vn > 0.0f) return;
 
-			float j = -(1.0f + 0.1f) * vn / invM;
+			float restitution = 0.01f;
+			float j = -(1.0f + restitution) * vn / invM;
 			glm::vec3 imp = j * n;
 			p1->vel += imp * p1->mass_inv;
 			p2->vel -= imp * p2->mass_inv;
@@ -228,7 +245,7 @@ namespace Physics {
 			if (glm::length(t) > 1e-4f) {
 				t = glm::normalize(t);
 				float jt = -glm::dot(relVel, t) / invM;
-				float maxF = j * 0.02f;
+				float maxF = j * 0.2f;
 				if (std::abs(jt) > maxF)
 					jt = maxF * (jt > 0 ? 1 : -1);
 
@@ -236,7 +253,12 @@ namespace Physics {
 				p1->vel += fImp * p1->mass_inv;
 				p2->vel -= fImp * p2->mass_inv;
 			}
-			glm::vec3 correction = n * (overlap / invM);
+			float percent = 0.9f;
+			float slop = 0.001f; // í—ˆìš© ì¹¨íˆ¬ ê¹Šì´ (ì´ë§Œí¼ì€ ê²¹ì³ë„ ë´ì¤Œ)
+
+			float correctionMag = std::max(overlap - slop, 0.0f) / invM * percent;
+
+			glm::vec3 correction = n * correctionMag;
 			p1->pos += correction * p1->mass_inv;
 			p2->pos -= correction * p2->mass_inv;
 		}
@@ -260,10 +282,10 @@ namespace Physics {
 
 		if (!pendingRemoval.empty()) {
 			for (auto obj : pendingRemoval) {
-				// [¼öÁ¤] erase-remove idiomÀ» Á¤È®ÇÏ°Ô »ç¿ëÇÏ¿© ¹°¸® ¸®½ºÆ®¿¡¼­ ¿µ±¸ Á¦°Å
+				// [ìˆ˜ì •] erase-remove idiomì„ ì •í™•í•˜ê²Œ ì‚¬ìš©í•˜ì—¬ ë¬¼ë¦¬ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì˜êµ¬ ì œê±°
 				balls.erase(std::remove(balls.begin(), balls.end(), obj), balls.end());
 
-				// ¸ŞÀÎ(·»´õ¸µ) ÂÊ¿¡ »èÁ¦ ¿äÃ»
+				// ë©”ì¸(ë Œë”ë§) ìª½ì— ì‚­ì œ ìš”ì²­
 				if (onRemove) onRemove(obj);
 			}
 			pendingRemoval.clear();

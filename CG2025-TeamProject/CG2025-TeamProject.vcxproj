@@ -136,6 +136,8 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CollisionUtils.cpp" />
     <ClCompile Include="CommonUtils.cpp" />
+    <ClCompile Include="EventSystem.cpp" />
+    <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model.cpp" />
@@ -150,6 +152,8 @@
     <ClInclude Include="CommonUtils.h" />
     <ClInclude Include="Common_Headers.h" />
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="EventSystem.h" />
+    <ClInclude Include="GameManager.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="PhysicsWorld.h" />

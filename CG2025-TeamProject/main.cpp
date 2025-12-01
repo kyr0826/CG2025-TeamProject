@@ -1,23 +1,21 @@
 #define _CRT_SECURE_NO_WARNINGS 
+#define STB_IMAGE_IMPLEMENTATION
+
+#include "stb_image.h"
 #include "Common_Headers.h"
 #include "Shader.h"
 #include "GameObject.h"
 #include "Camera.h"
 #include "PhysicsWorld.h"
 #include "CommonUtils.h"
+#include "EventSystem.h"
+#include "GameManager.h"
 
-struct FruitInfo {
-	std::string name;
-	float scale;
-	glm::vec3 color;
-	float mass;
-};
-
-// 네임스페이스 사용
 using namespace Graphics;
 using namespace Objects;
 using namespace Physics;
 using namespace Utils;
+using namespace Core;
 
 GLvoid DrawScene();
 GLvoid ReShape(int w, int h);
@@ -31,11 +29,16 @@ void CalculateTrajectory();
 void DrawTrajectory();
 void SpawnReadyFruit();
 
-void InitFruitData();
 void InitResources();
 
 void OnFruitMerge(int nextLevel, glm::vec3 pos);
 void OnObjectRemove(GameObject* obj);
+
+void HandleScoreUpdate(const EventData& data);
+void HandlePlaySound(const EventData& data);
+void HandleGameOver(const EventData& data);
+
+GLuint LoadTexture(const char* path);
 
 // 전역 변수
 Shader* common_shader = nullptr;
@@ -46,22 +49,27 @@ Model* common_sphere_model = nullptr;
 float common_sphere_radius = 0.0f;
 
 std::vector<GameObject*> renderObjects;
-std::vector<FruitInfo> fruitTypes;
+
 
 // 카메라 제어 변수
 float g_camera_y_rotation = 0.0f;
 float g_camera_distance = CAMERA_DISTANCE;
 
 // 발사 제어 변수
-float g_launch_pitch = 54.0f;	// 발사 각도 (높게 던져야 포물선이 예쁨)
-float g_launch_yaw = 0.0f;		// 카메라 공전 각도
-float g_launch_force = 5.0f;	// 발사 힘 (적당히 멀리 날아가도록)
-float g_spawn_timer = 0.0f;		// 다음 과일 생성까지의 시간 카운터
+float g_launch_pitch = 54.0f;		// 발사 각도 (높게 던져야 포물선이 예쁨)
+float g_launch_yaw = 0.0f;			// 카메라 공전 각도
+float g_launch_force = LAUNCH_FORCE;	// 발사 힘 (적당히 멀리 날아가도록)
+float g_spawn_timer = 0.0f;			// 다음 과일 생성까지의 시간 카운터
 
 GameObject* readyFruit = nullptr;
 
 // 궤적 렌더링용
 std::vector<glm::vec3> trajectoryPoints;
+
+int g_total_Score = 0;
+bool g_isGameOver = false;
+
+GLuint dishTextureID = 0;
 
 void main(int argc, char** argv) {
 	glutInit(&argc, argv);
@@ -75,14 +83,16 @@ void main(int argc, char** argv) {
 	common_shader = new Shader("fragment.glsl", "vertex.glsl");
 
 	// 카메라 초기 위치 설정 (약간 위에서 바라봄)
-	main_camera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, glm::vec3(0, INITIAL_CAMERA_Y, g_camera_distance));
+	main_camera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, glm::vec3(0, CAMERA_Y, g_camera_distance));
 
 	// 물리 월드 생성
 	physicsWorld = new PhysicsWorld();
 	physicsWorld->SetMergeCallback(OnFruitMerge);
 	physicsWorld->SetRemoveCallback(OnObjectRemove);
 
-	InitFruitData();
+	EventSystem::GetInstance().Subscribe(EventType::ScoreUpdated, HandleScoreUpdate);
+	EventSystem::GetInstance().Subscribe(EventType::PlaySound, HandlePlaySound);
+	EventSystem::GetInstance().Subscribe(EventType::GameStateChanged, HandleGameOver);
 
 	InitResources();
 
@@ -107,9 +117,16 @@ void CreateDish() {
 	dishModel->Recenter();
 
 	GameObject* dish = new GameObject("Dish", new Physics_Body(0.0f), dishModel, common_shader);
-	dish->SetPosition(glm::vec3(0, -1, 0));
-	dish->SetScale(glm::vec3(2.0f));
-	dish->SetModelColor(glm::vec3(0.4f, 0.6f, 1.0f));
+	dish->SetPosition(glm::vec3(0, -1.5f, 0));
+	dish->SetScale(glm::vec3(3.0f));
+
+	if (dishTextureID == 0) {
+		dishTextureID = LoadTexture("Dish_Texture.png");
+	}
+	dish->SetTexture(dishTextureID);
+
+	// dish->SetModelColor(glm::vec3(0.4f, 0.6f, 1.0f));
+	dish->SetModelColor(glm::vec3(1.0f, 1.0f, 1.0f));
 
 	physicsWorld->SetDish(dish);
 	renderObjects.push_back(dish);
@@ -122,41 +139,15 @@ void InitResources() {
 	common_sphere_radius = common_sphere_model->GetExactRadius() * 0.98f;
 }
 
-void InitFruitData() {
-	fruitTypes.clear();
-	// 단계 | 이름 | 스케일 | 색상(RGB) | 질량(스케일에 비례)
 
-	// 0. 체리
-	fruitTypes.push_back({ "Cherry", 0.15f, glm::vec3(0.8f, 0.0f, 0.0f), 1.0f });
-	// 1. 딸기
-	fruitTypes.push_back({ "Strawberry", 0.23f, glm::vec3(1.0f, 0.2f, 0.2f), 2.0f });
-	// 2. 포도
-	fruitTypes.push_back({ "Grape", 0.32f, glm::vec3(0.6f, 0.2f, 0.8f), 3.0f });
-	// 3. 한라봉 (귤)
-	fruitTypes.push_back({ "Hallabong", 0.40f, glm::vec3(1.0f, 0.6f, 0.0f), 4.0f });
-	// 4. 감
-	fruitTypes.push_back({ "Persimmon", 0.50f, glm::vec3(1.0f, 0.4f, 0.0f), 5.0f });
-	// 5. 사과
-	fruitTypes.push_back({ "Apple", 0.62f, glm::vec3(0.9f, 0.1f, 0.1f), 7.0f });
-	// 6. 참외 (노랑)
-	fruitTypes.push_back({ "Pear", 0.75f, glm::vec3(0.9f, 0.9f, 0.6f), 10.0f });
-	// 7. 복숭아
-	fruitTypes.push_back({ "Peach", 0.90f, glm::vec3(1.0f, 0.7f, 0.8f), 13.0f });
-	// 8. 파인애플
-	fruitTypes.push_back({ "Pineapple", 1.10f, glm::vec3(0.9f, 0.8f, 0.2f), 18.0f });
-	// 9. 멜론
-	fruitTypes.push_back({ "Melon", 1.35f, glm::vec3(0.5f, 0.9f, 0.5f), 25.0f });
-	// 10. 수박
-	fruitTypes.push_back({ "Watermelon", 1.60f, glm::vec3(0.1f, 0.7f, 0.2f), 35.0f });
-}
 
 GLvoid DrawScene() {
-	glClearColor(1, 1, 1, 1);
+	glClearColor(.25, .25, .25, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 
-	for (auto obj : renderObjects) 
+	for (auto obj : renderObjects)
 		obj->RenderModel(*main_camera);
 
 	glMatrixMode(GL_PROJECTION);
@@ -232,15 +223,40 @@ GLvoid Keyboard(unsigned char key, int x, int y) {
 	}
 	break;
 
-	case 'a': 
+	case 'a':
+	case 'A':
 	case 'd':
-		g_launch_yaw += ((key == 'a') ? 1 : -1) * CAMERA_ROTATION_SPEED;
-		// TODO : 회전 사운드 출력
+	case 'D':
+		g_launch_yaw += ((key == 'a' || key == 'A') ? -1 : 1) * CAMERA_ROTATION_SPEED;
+		EventSystem::GetInstance().PublishSound("Camera_Rotate.wav");
 		break;
 
 		// 각도 제한 (너무 낮거나 너무 높지 않게)
-	case 'w': g_launch_pitch = std::min(g_launch_pitch + 2.0f, 81.0f); break;
-	case 's': g_launch_pitch = std::max(g_launch_pitch - 2.0f, 12.0f); break;
+	case 'w':
+	case 'W':
+		g_launch_pitch = std::min(g_launch_pitch + 2.0f, 68.0f);
+		break;
+
+	case 's': 
+	case 'S': 
+		g_launch_pitch = std::max(g_launch_pitch - 2.0f, 14.0f); 
+		break;
+
+	case 'h':
+		GameManager::GetInstance().GameStart();
+		break;
+
+	case 'j':
+		GameManager::GetInstance().GamePause();
+		break;
+
+	case 'k':
+		GameManager::GetInstance().GameResume();
+		break;
+
+	case 'l':
+		GameManager::GetInstance().GameOver();
+		break;
 	}
 }
 
@@ -251,7 +267,7 @@ glm::vec3 CalculateLaunchPosition() {
 	glm::vec3 forward = glm::normalize(target - camPos);
 	glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
 
-	glm::vec3 offset = (forward * 3.0f) + (right * -0.5f) + glm::vec3(0, -1.5f, 0);
+	glm::vec3 offset = (forward * 3.5f) + (right * -0.2f) + glm::vec3(0, -1.6f, 0);
 
 	return camPos + offset;
 }
@@ -308,9 +324,7 @@ void DrawTrajectory() {
 }
 
 void SpawnReadyFruit() {
-	int level = CommonUtils::RandomInt(0, 4);
-
-	const FruitInfo& info = fruitTypes[level];
+	FruitInfo info = GameManager::GetInstance().GetCurrentFruit();
 
 	// 물리 바디 생성 (공유된 반지름 사용)
 	Physics_Body* body = new Physics_Body(info.mass);
@@ -322,12 +336,12 @@ void SpawnReadyFruit() {
 
 	readyFruit->SetScale(glm::vec3(info.scale));
 	readyFruit->SetModelColor(info.color);
-	readyFruit->fruitLevel = level;
+	readyFruit->fruitLevel = info.level;
 	renderObjects.push_back(readyFruit);
 }
 
 void OnFruitMerge(int nextLevel, glm::vec3 pos) {
-	const FruitInfo& info = fruitTypes[nextLevel];
+	const FruitInfo& info = GameManager::GetInstance().GetFruitInfo(nextLevel);
 
 	Physics_Body* body = new Physics_Body(info.mass);
 	body->colliderRadius = common_sphere_radius * 0.95f;
@@ -351,4 +365,61 @@ void OnObjectRemove(GameObject* obj) {
 	auto it = std::remove(renderObjects.begin(), renderObjects.end(), obj);
 	renderObjects.erase(it, renderObjects.end());
 	delete obj; // 메모리 해제
+}
+
+void HandleScoreUpdate(const EventData& data) {
+	g_total_Score += data.intVal;
+	std::cout << "Score Up! Current Score: " << g_total_Score << std::endl;
+	// 나중에 여기에 텍스트 렌더링 로직 추가 가능
+}
+
+void HandlePlaySound(const EventData& data) {
+	std::cout << "[Sound System] Playing: " << data.strVal << std::endl;
+	// 실제 사운드 라이브러리(FMOD, OpenAL 등) 연동 위치
+	// 예: SoundManager::Play(data.strVal);
+}
+
+void HandleGameOver(const EventData& data) {
+	if (g_isGameOver) return;
+	if (data.nextGameState != GameState::GameOver) return;
+
+	g_isGameOver = true;
+	std::cout << "!!! GAME OVER !!!" << std::endl;
+	glutLeaveMainLoop();
+}
+
+GLuint LoadTexture(const char* path) {
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+
+	int width, height, nrComponents;
+	// OpenGL은 UV 좌표의 Y축이 아래에서 위로 증가하므로, 이미지를 로드할 때 뒤집어야 함
+	stbi_set_flip_vertically_on_load(true);
+
+	unsigned char* data = stbi_load(path, &width, &height, &nrComponents, 0);
+	if (data) {
+		GLenum format;
+		if (nrComponents == 1) format = GL_RED;
+		else if (nrComponents == 3) format = GL_RGB;
+		else if (nrComponents == 4) format = GL_RGBA;
+
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		// 텍스처 래핑/필터링 설정
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		stbi_image_free(data);
+		std::cout << "Texture Loaded: " << path << std::endl;
+	}
+	else {
+		std::cout << "Texture Failed to Load: " << path << std::endl;
+		stbi_image_free(data);
+	}
+
+	return textureID;
 }

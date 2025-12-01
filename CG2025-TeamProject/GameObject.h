@@ -29,6 +29,8 @@ namespace Objects {
 		void SetAcceleration(const glm::vec3& acc) { physics->acc = acc; }
 		void SetModelColor(const glm::vec3& color) { model_color = color; }
 
+		void SetTexture(GLuint texID) { textureID = texID; }
+
 		void RenderModel(Camera& camera);
 
 		void PlayMergeAnimation();
@@ -43,6 +45,8 @@ namespace Objects {
 		glm::vec3 model_scale;
 		glm::vec3 origin_model_scale;
 		glm::vec3 model_color;
+
+		GLuint textureID = 0;
 
 		float animate_time{};
 	};

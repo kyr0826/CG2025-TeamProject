@@ -3,7 +3,11 @@
 #include "Shader.h"
 
 namespace Graphics {
-	struct Vertex { glm::vec3 pos, normal; };
+	struct Vertex {
+		glm::vec3 pos, normal;
+		glm::vec2 uv;
+	};
+
 	struct Face { unsigned int v1, v2, v3; };
 
 	class Model {

@@ -7,17 +7,17 @@ namespace Graphics {
 		long length;
 		char* buf;
 
-		fptr = fopen(file, "rb");			//--- ¹ÙÀÌ³Ê¸® ¸ğµå·Î ÆÄÀÏ ¿­±â
-		if (!fptr)							//--- ÆÄÀÏ ¿­±â ½ÇÆĞ
+		fptr = fopen(file, "rb");			//--- ë°”ì´ë„ˆë¦¬ ëª¨ë“œë¡œ íŒŒì¼ ì—´ê¸°
+		if (!fptr)							//--- íŒŒì¼ ì—´ê¸° ì‹¤íŒ¨
 			return NULL;
 
-		fseek(fptr, 0, SEEK_END);			//--- ÆÄÀÏ Æ÷ÀÎÅÍ¸¦ ÆÄÀÏ ³¡À¸·Î ÀÌµ¿
-		length = ftell(fptr);				//--- ÆÄÀÏ ±æÀÌ ¾ò±â
-		buf = (char*)malloc(length + 1);	//--- ÆÄÀÏ ±æÀÌ + NULL ¹®ÀÚ
-		fseek(fptr, 0, SEEK_SET);			//--- ÆÄÀÏ Æ÷ÀÎÅÍ¸¦ ÆÄÀÏ Ã³À½À¸·Î ÀÌµ¿
-		fread(buf, length, 1, fptr);		//--- ÆÄÀÏ ÀĞ±â
-		fclose(fptr);						//--- ÆÄÀÏ ´İ±â
-		buf[length] = 0;					//--- NULL ¹®ÀÚ Ãß°¡
+		fseek(fptr, 0, SEEK_END);			//--- íŒŒì¼ í¬ì¸í„°ë¥¼ íŒŒì¼ ëìœ¼ë¡œ ì´ë™
+		length = ftell(fptr);				//--- íŒŒì¼ ê¸¸ì´ ì–»ê¸°
+		buf = (char*)malloc(length + 1);	//--- íŒŒì¼ ê¸¸ì´ + NULL ë¬¸ì
+		fseek(fptr, 0, SEEK_SET);			//--- íŒŒì¼ í¬ì¸í„°ë¥¼ íŒŒì¼ ì²˜ìŒìœ¼ë¡œ ì´ë™
+		fread(buf, length, 1, fptr);		//--- íŒŒì¼ ì½ê¸°
+		fclose(fptr);						//--- íŒŒì¼ ë‹«ê¸°
+		buf[length] = 0;					//--- NULL ë¬¸ì ì¶”ê°€
 
 		return buf;
 	}
@@ -35,7 +35,7 @@ namespace Graphics {
 		if (!result) {
 			char errorLog[512];
 			glGetShaderInfoLog(vertexShader, 512, NULL, errorLog);
-			std::cerr << "ERROR: vertex shader ÄÄÆÄÀÏ ½ÇÆĞ\n" << errorLog << std::endl;
+			std::cerr << "ERROR: vertex shader ì»´íŒŒì¼ ì‹¤íŒ¨\n" << errorLog << std::endl;
 			return false;
 		}
 		free(vertexSource);
@@ -44,7 +44,7 @@ namespace Graphics {
 
 	bool ShaderUtils::make_fragmentShaders(const char* file, GLuint& fragmentShader)
 	{
-		GLchar* fragmentSource = filetobuf("fragment.glsl");
+		GLchar* fragmentSource = filetobuf(file);
 
 		fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
@@ -57,7 +57,7 @@ namespace Graphics {
 		if (!result) {
 			char errorLog[512];
 			glGetShaderInfoLog(fragmentShader, 512, NULL, errorLog);
-			std::cerr << "ERROR: frag_shader ÄÄÆÄÀÏ ½ÇÆĞ\n" << errorLog << std::endl;
+			std::cerr << "ERROR: frag_shader ì»´íŒŒì¼ ì‹¤íŒ¨\n" << errorLog << std::endl;
 			return false;
 		}
 		free(fragmentSource);

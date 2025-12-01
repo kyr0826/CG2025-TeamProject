@@ -1,4 +1,8 @@
 #include "Physics_Body.h"
+#include "EventSystem.h"
+#include "GameManager.h"
+
+using namespace Core;
 
 namespace Physics {
 	Physics_Body::Physics_Body(float mass) {
@@ -16,5 +20,9 @@ namespace Physics {
 
 		vel += acc * dt;
 		pos += vel * dt;
+
+		if (pos.y < -3.0f) {
+			GameManager::GetInstance().GameOver();
+		}
 	}
 }

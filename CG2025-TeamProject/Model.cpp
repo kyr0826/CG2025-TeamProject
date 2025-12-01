@@ -19,6 +19,8 @@ namespace Graphics {
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, normal));
 		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, uv));
+		glEnableVertexAttribArray(2);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, face_count * sizeof(Face), faces, GL_STATIC_DRAW);
@@ -48,7 +50,7 @@ namespace Graphics {
 	}
 
 	/// <summary>
-	/// Áß½ÉÁ¡À» (0,0,0)À¸·Î °­Á¦ ÀÌµ¿½ÃÅ°´Â ÇÔ¼ö
+	/// ì¤‘ì‹¬ì ì„ (0,0,0)ìœ¼ë¡œ ê°•ì œ ì´ë™ì‹œí‚¤ëŠ” í•¨ìˆ˜
 	/// </summary>
 	void Model::Recenter() {
 		glm::vec3 minPos(FLT_MAX), maxPos(-FLT_MAX);
@@ -66,7 +68,7 @@ namespace Graphics {
 	}
 
 	/// <summary>
-	/// Á¤È®ÇÑ ¹°¸® ¹İÁö¸§ °è»ê
+	/// ì •í™•í•œ ë¬¼ë¦¬ ë°˜ì§€ë¦„ ê³„ì‚°
 	/// </summary>
 	float Model::GetExactRadius() {
 		float maxDistSq = 0.0f;
@@ -79,7 +81,7 @@ namespace Graphics {
 
 	void Model::ReadObjFile(const char* fileName) {
 		FILE* file;
-		fopen_s(&file,fileName, "r");
+		fopen_s(&file, fileName, "r");
 		if (!file) exit(EXIT_FAILURE);
 
 		char line[256];
@@ -87,12 +89,14 @@ namespace Graphics {
 		vertex_count = 0;
 		face_count = 0;
 		size_t normal_count = 0;
+		size_t uv_count = 0;
 
 		while (fgets(line, sizeof(line), file)) {
 			ReadNewLine(line);
 
 			if (line[0] == 'v' && line[1] == ' ') vertex_count++;
 			else if (line[0] == 'v' && line[1] == 'n') normal_count++;
+			else if (line[0] == 'v' && line[1] == 't') uv_count++;
 			else if (line[0] == 'f' && line[1] == ' ') face_count++;
 		}
 		fseek(file, 0, SEEK_SET);
@@ -100,8 +104,9 @@ namespace Graphics {
 		vertices = (Vertex*)calloc(vertex_count, sizeof(Vertex));
 		faces = (Face*)calloc(face_count, sizeof(Face));
 		glm::vec3* temp_n = (glm::vec3*)calloc(normal_count, sizeof(glm::vec3));
+		glm::vec2* temp_uv = (glm::vec2*)calloc(uv_count, sizeof(glm::vec2));
 
-		size_t v_idx = 0, n_idx = 0, f_idx = 0;
+		size_t v_idx = 0, n_idx = 0, f_idx = 0, uv_idx = 0;
 		while (fgets(line, sizeof(line), file)) {
 			ReadNewLine(line);
 
@@ -113,18 +118,23 @@ namespace Graphics {
 				sscanf_s(line + 2, "%f %f %f", &temp_n[n_idx].x, &temp_n[n_idx].y, &temp_n[n_idx].z);
 				n_idx++;
 			}
+			else if (line[0] == 'v' && line[1] == 't') {
+				sscanf_s(line + 2, "%f %f", &temp_uv[uv_idx].x, &temp_uv[uv_idx].y);
+				uv_idx++;
+			}
 			else if (line[0] == 'f' && line[1] == ' ') {
-				unsigned int v[3], vn[3], temp;
+				unsigned int v[3], vt[3], vn[3];
 				int matches = sscanf_s(line + 2, "%d/%d/%d %d/%d/%d %d/%d/%d"
-					, &v[0], &temp, &vn[0]
-					, &v[1], &temp, &vn[1]
-					, &v[2], &temp, &vn[2]);
+					, &v[0], &vt[0], &vn[0]
+					, &v[1], &vt[1], &vn[1]
+					, &v[2], &vt[2], &vn[2]);
 
 				if (matches != 9) {
 					sscanf_s(line + 2, "%d//%d %d//%d %d//%d"
 						, &v[0], &vn[0]
 						, &v[1], &vn[1]
 						, &v[2], &vn[2]);
+					vt[0] = vt[1] = vt[2] = 0;
 				}
 
 				faces[f_idx].v1 = v[0] - 1;
@@ -134,10 +144,16 @@ namespace Graphics {
 				if (vn[0] > 0) vertices[v[0] - 1].normal = temp_n[vn[0] - 1];
 				if (vn[1] > 0) vertices[v[1] - 1].normal = temp_n[vn[1] - 1];
 				if (vn[2] > 0) vertices[v[2] - 1].normal = temp_n[vn[2] - 1];
+
+				if (vt[0] > 0) vertices[v[0] - 1].uv = temp_uv[vt[0] - 1];
+				if (vt[1] > 0) vertices[v[1] - 1].uv = temp_uv[vt[1] - 1];
+				if (vt[2] > 0) vertices[v[2] - 1].uv = temp_uv[vt[2] - 1];
+
 				f_idx++;
 			}
 		}
 		fclose(file);
 		free(temp_n);
+		free(temp_uv);
 	}
 }

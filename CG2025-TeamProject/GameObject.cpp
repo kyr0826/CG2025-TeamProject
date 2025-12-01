@@ -6,6 +6,9 @@ namespace Objects {
 		model_scale = glm::vec3(1.0f);
 		origin_model_scale = model_scale;
 		model_color = glm::vec3(.85f);
+
+		textureID = 0;
+
 		model->SetShader(shader);
 	}
 
@@ -16,13 +19,23 @@ namespace Objects {
 
 	void GameObject::RenderModel(Camera& camera) {
 		shader->Activate();
+		GLuint id = shader->GetShaderProgramID();
+
 		glUniform3fv(glGetUniformLocation(shader->GetShaderProgramID(), "objectColor"), 1, glm::value_ptr(model_color));
+
+		if (this->textureID != 0) {
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, textureID);
+			glUniform1i(glGetUniformLocation(id, "outTexture"), 0); // 0ë²ˆ ìŠ¬ë¡¯
+		}
+
+		glUniform1i(glGetUniformLocation(id, "useTexture"), this->textureID);
 
 		glm::mat4 T = glm::translate(glm::mat4(1.0f), physics->pos);
 		glm::mat4 R = glm::mat4(1.0f);
 		glm::mat4 S = glm::scale(glm::mat4(1.0f), model_scale);
 
-		// OpenGL = T R S ¸ðµ¨ ( ¼ø¼­ : <- )
+		// OpenGL = T R S ëª¨ë¸ ( ìˆœì„œ : <- )
 		model->SetModelMatrix(T * R * S);
 		camera.Matrix(45.0f, 0.1f, 100.0f, *shader);
 		model->Render();
