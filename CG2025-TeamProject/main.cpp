@@ -1,7 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS 
-#define STB_IMAGE_IMPLEMENTATION
 
-#include "stb_image.h"
 #include "Common_Headers.h"
 #include "Shader.h"
 #include "GameObject.h"
@@ -10,6 +8,8 @@
 #include "CommonUtils.h"
 #include "EventSystem.h"
 #include "GameManager.h"
+#include "TextureManager.h"
+#include "SoundManager.h"
 
 using namespace Graphics;
 using namespace Objects;
@@ -38,8 +38,6 @@ void HandleScoreUpdate(const EventData& data);
 void HandlePlaySound(const EventData& data);
 void HandleGameOver(const EventData& data);
 
-GLuint LoadTexture(const char* path);
-
 // 전역 변수
 Shader* common_shader = nullptr;
 Camera* main_camera = nullptr;
@@ -47,6 +45,7 @@ PhysicsWorld* physicsWorld = nullptr;
 
 Model* common_sphere_model = nullptr;
 float common_sphere_radius = 0.0f;
+Model* dish_model = nullptr;
 
 std::vector<GameObject*> renderObjects;
 
@@ -68,8 +67,6 @@ std::vector<glm::vec3> trajectoryPoints;
 
 int g_total_Score = 0;
 bool g_isGameOver = false;
-
-GLuint dishTextureID = 0;
 
 void main(int argc, char** argv) {
 	glutInit(&argc, argv);
@@ -103,6 +100,9 @@ void main(int argc, char** argv) {
 	glutReshapeFunc(ReShape);
 	glutKeyboardFunc(Keyboard);
 	glutTimerFunc(16, Timer, 16);
+
+	SoundManager::GetInstance().Play("BGM");
+
 	glutMainLoop();
 
 	// 종료 시 메모리 해제
@@ -113,19 +113,13 @@ void main(int argc, char** argv) {
 }
 
 void CreateDish() {
-	Model* dishModel = new Model("Dish.obj");
-	dishModel->Recenter();
-
-	GameObject* dish = new GameObject("Dish", new Physics_Body(0.0f), dishModel, common_shader);
+	GameObject* dish = new GameObject("Dish", new Physics_Body(0.0f), dish_model, common_shader);
 	dish->SetPosition(glm::vec3(0, -1.5f, 0));
 	dish->SetScale(glm::vec3(3.0f));
 
-	if (dishTextureID == 0) {
-		dishTextureID = LoadTexture("Dish_Texture.png");
-	}
-	dish->SetTexture(dishTextureID);
+	GLuint dishTextureID = TextureManager::GetInstance().GetTexture("Dish");
+	if (dishTextureID != 0) { dish->SetTexture(dishTextureID); }
 
-	// dish->SetModelColor(glm::vec3(0.4f, 0.6f, 1.0f));
 	dish->SetModelColor(glm::vec3(1.0f, 1.0f, 1.0f));
 
 	physicsWorld->SetDish(dish);
@@ -133,13 +127,16 @@ void CreateDish() {
 }
 
 void InitResources() {
-	common_sphere_model = new Model("Sphere.obj");
+	common_sphere_model = new Model("Fruit_Model.obj");
 	common_sphere_model->Recenter();
-
 	common_sphere_radius = common_sphere_model->GetExactRadius() * 0.98f;
+
+	dish_model = new Model("Dish.obj");
+	dish_model->Recenter();
+
+	TextureManager::GetInstance().Initialize();
+	SoundManager::GetInstance().Initialize();
 }
-
-
 
 GLvoid DrawScene() {
 	glClearColor(.25, .25, .25, 1);
@@ -326,15 +323,13 @@ void DrawTrajectory() {
 void SpawnReadyFruit() {
 	FruitInfo info = GameManager::GetInstance().GetCurrentFruit();
 
-	// 물리 바디 생성 (공유된 반지름 사용)
 	Physics_Body* body = new Physics_Body(info.mass);
 	body->colliderRadius = common_sphere_radius;
 
-	// 게임 오브젝트 생성 (공유 모델 전달)
-	// 주의: GameObject 소멸자에서 model을 delete하지 않도록 구현되어 있어야 함
 	readyFruit = new GameObject(info.name, body, common_sphere_model, common_shader);
 
 	readyFruit->SetScale(glm::vec3(info.scale));
+	// readyFruit->SetTexture(TextureManager::GetInstance().GetTexture(info.name));
 	readyFruit->SetModelColor(info.color);
 	readyFruit->fruitLevel = info.level;
 	renderObjects.push_back(readyFruit);
@@ -353,6 +348,7 @@ void OnFruitMerge(int nextLevel, glm::vec3 pos) {
 	GameObject* newFruit = new GameObject(info.name, body, common_sphere_model, common_shader);
 	newFruit->SetScale(glm::vec3(info.scale));
 	newFruit->SetModelColor(info.color);
+	// newFruit->SetTexture(TextureManager::GetInstance().GetTexture(info.name));
 	newFruit->fruitLevel = nextLevel;
 	newFruit->PlayMergeAnimation();
 
@@ -370,13 +366,11 @@ void OnObjectRemove(GameObject* obj) {
 void HandleScoreUpdate(const EventData& data) {
 	g_total_Score += data.intVal;
 	std::cout << "Score Up! Current Score: " << g_total_Score << std::endl;
-	// 나중에 여기에 텍스트 렌더링 로직 추가 가능
 }
 
 void HandlePlaySound(const EventData& data) {
 	std::cout << "[Sound System] Playing: " << data.strVal << std::endl;
-	// 실제 사운드 라이브러리(FMOD, OpenAL 등) 연동 위치
-	// 예: SoundManager::Play(data.strVal);
+	SoundManager::GetInstance().Play(data.strVal);
 }
 
 void HandleGameOver(const EventData& data) {
@@ -386,40 +380,4 @@ void HandleGameOver(const EventData& data) {
 	g_isGameOver = true;
 	std::cout << "!!! GAME OVER !!!" << std::endl;
 	glutLeaveMainLoop();
-}
-
-GLuint LoadTexture(const char* path) {
-	GLuint textureID;
-	glGenTextures(1, &textureID);
-
-	int width, height, nrComponents;
-	// OpenGL은 UV 좌표의 Y축이 아래에서 위로 증가하므로, 이미지를 로드할 때 뒤집어야 함
-	stbi_set_flip_vertically_on_load(true);
-
-	unsigned char* data = stbi_load(path, &width, &height, &nrComponents, 0);
-	if (data) {
-		GLenum format;
-		if (nrComponents == 1) format = GL_RED;
-		else if (nrComponents == 3) format = GL_RGB;
-		else if (nrComponents == 4) format = GL_RGBA;
-
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		// 텍스처 래핑/필터링 설정
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		stbi_image_free(data);
-		std::cout << "Texture Loaded: " << path << std::endl;
-	}
-	else {
-		std::cout << "Texture Failed to Load: " << path << std::endl;
-		stbi_image_free(data);
-	}
-
-	return textureID;
 }
