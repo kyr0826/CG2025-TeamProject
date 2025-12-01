@@ -145,6 +145,8 @@
     <ClCompile Include="Physics_Body.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderUtils.cpp" />
+    <ClCompile Include="SoundManager.cpp" />
+    <ClCompile Include="TextureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -160,6 +162,8 @@
     <ClInclude Include="Physics_Body.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderUtils.h" />
+    <ClInclude Include="SoundManager.h" />
+    <ClInclude Include="TextureManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
