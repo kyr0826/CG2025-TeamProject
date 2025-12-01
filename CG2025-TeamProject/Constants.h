@@ -24,3 +24,8 @@ const float SPAWN_DELAY 			= 0.5f;		// 다음 과일 생성까지의 지연 시�
 
 // 애니메이션 상수
 const float MERGE_ANIMATION_TIME = 0.2f;		// 병합 애니메이션 시간
+
+// 리소르 루트
+const std::string MODEL_ROOT = "Resources/Model";
+const std::string SOUND_ROOT = "Resources/Sound";
+const std::string TEXTURE_ROOT = "Resources/Texture";

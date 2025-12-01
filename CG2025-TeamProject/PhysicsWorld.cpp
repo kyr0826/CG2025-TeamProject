@@ -218,7 +218,7 @@ namespace Physics {
 					EventSystem::GetInstance().PublishScore(scoreToAdd);
 
 					// 2. 사운드: 팝 효과음 재생 요청
-					EventSystem::GetInstance().PublishSound("pop.wav");
+					EventSystem::GetInstance().PublishSound("Merge");
 
 					// 3. 수박(레벨 10) 완성 시 게임 클리어/종료 처리 예시
 					if (ev.nextLevel == 10) {

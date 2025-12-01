@@ -5,7 +5,9 @@
 namespace Graphics {
 	Model::Model(std::string file_url) {
 		modelMatrix = glm::mat4(1.0f);
-		ReadObjFile(file_url.c_str());
+
+		std::string full_path = MODEL_ROOT + "/" + file_url;
+		ReadObjFile(full_path.c_str());
 
 		glGenVertexArrays(1, &VAO);
 		glGenBuffers(1, &VBO);
