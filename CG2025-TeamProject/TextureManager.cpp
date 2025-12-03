@@ -57,7 +57,8 @@ namespace Core {
 	void TextureManager::Initialize() {
 		const std::vector<TextureInfo> init_textures = {
 			{"Dish", "Dish_Texture.png"},
-			{"Apple", "Apple_Texture.png"}
+			{"Apple", "Apple_Texture.png"},
+			{"UI_Back", "UI.png"}
 		};
 
 		for (const auto& info : init_textures) {
