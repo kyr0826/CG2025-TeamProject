@@ -54,6 +54,9 @@ public:
 		int nextLevel = CommonUtils::RandomInt(0, 4);  
 		nextFruit = fruitTypes[nextLevel];  
 		return curFruit;  
+		int randLevel = CommonUtils::RandomInt(0, 4);  
+		nextFruit = fruitTypes[randLevel];
+		return returnFruit;
 	}
 
 	FruitInfo CurFruit() const { return curFruit; }
