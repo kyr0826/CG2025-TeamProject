@@ -22,6 +22,8 @@ const int TRAJECTORY_POINTS_COUNT	= 30;		// 궤적 점 개수
 const float TRAJECTORY_TIME_STEP	= 0.05f;	// 점 사이의 시간 간격
 const float SPAWN_DELAY 			= 0.5f;		// 다음 과일 생성까지의 지연 시간
 
+const glm::vec3 READY_FRUIT_OFFSET	= glm::vec3(-0.2f, -1.6f, 5.0f);
+
 // 애니메이션 상수
 const float MERGE_ANIMATION_TIME = 0.2f;		// 병합 애니메이션 시간
 
