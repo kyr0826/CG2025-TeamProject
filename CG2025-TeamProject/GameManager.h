@@ -21,7 +21,7 @@ struct FruitInfo {
 			mass = other.mass;  
 		}  
 		return *this;  
-	}  
+	}
 };  
 
 enum class GameState {  
@@ -45,13 +45,19 @@ public:
 	void GameResume();  
 	void GameOver();  
 
-	FruitInfo GetCurrentFruit() const {  
+	int GetScore() const { return score; }
+	GameState GetCurrentGameState() const { return curGameState; }
+
+	FruitInfo GetCurrentFruit() {  
 		FruitInfo returnFruit = curFruit;  
 		curFruit = nextFruit;  
 		int nextLevel = CommonUtils::RandomInt(0, 4);  
 		nextFruit = fruitTypes[nextLevel];  
 		return curFruit;  
-	}  
+	}
+
+	FruitInfo CurFruit() const { return curFruit; }
+	FruitInfo NextFruit() const { return nextFruit; }
 
 	FruitInfo GetFruitInfo(int fruit_level) const {
 		return fruitTypes[fruit_level];
@@ -66,17 +72,17 @@ private:
 	int score;  
 	std::vector<FruitInfo> fruitTypes;  
 	GameState curGameState;  
-	mutable FruitInfo curFruit, nextFruit;  
+	FruitInfo curFruit, nextFruit;  
 
 	void InitFruitData() {  
 		fruitTypes.clear();  
 
 		// 단계 | 이름 | 스케일 | 색상(RGB) | 질량(스케일에 비례)  
-		fruitTypes.push_back({ "Cherry",		0, 0.15f, glm::vec3(0.8f, 0.0f, 0.0f), 1.0f });	// 0. 체리  
-		fruitTypes.push_back({ "Strawberry",	1, 0.23f, glm::vec3(1.0f, 0.2f, 0.2f), 2.0f });	// 1. 딸기  
-		fruitTypes.push_back({ "Grape",			2, 0.32f, glm::vec3(0.6f, 0.2f, 0.8f), 3.0f });	// 2. 포도  
-		fruitTypes.push_back({ "Hallabong",		3, 0.40f, glm::vec3(1.0f, 0.6f, 0.0f), 4.0f });	// 3. 한라봉 (귤)  
-		fruitTypes.push_back({ "Persimmon",		4, 0.50f, glm::vec3(1.0f, 0.4f, 0.0f), 5.0f });	// 4. 감  
+		fruitTypes.push_back({ "Cherry",		0, 0.15f, glm::vec3(0.8f, 0.0f, 0.0f), 1.0f });		// 0. 체리  
+		fruitTypes.push_back({ "Strawberry",	1, 0.23f, glm::vec3(1.0f, 0.2f, 0.2f), 2.0f });		// 1. 딸기  
+		fruitTypes.push_back({ "Grape",			2, 0.32f, glm::vec3(0.6f, 0.2f, 0.8f), 3.0f });		// 2. 포도  
+		fruitTypes.push_back({ "Hallabong",		3, 0.40f, glm::vec3(1.0f, 0.6f, 0.0f), 4.0f });		// 3. 한라봉 (귤)  
+		fruitTypes.push_back({ "Persimmon",		4, 0.50f, glm::vec3(1.0f, 0.4f, 0.0f), 5.0f });		// 4. 감  
 		fruitTypes.push_back({ "Apple",			5, 0.62f, glm::vec3(0.9f, 0.1f, 0.1f), 7.0f }); 	// 5. 사과  
 		fruitTypes.push_back({ "Pear",			6, 0.75f, glm::vec3(0.9f, 0.9f, 0.6f), 10.0f });	// 6. 참외 (노랑)  
 		fruitTypes.push_back({ "Peach",			7, 0.90f, glm::vec3(1.0f, 0.7f, 0.8f), 13.0f });	// 7. 복숭아  
