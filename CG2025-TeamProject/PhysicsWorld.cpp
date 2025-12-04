@@ -14,7 +14,7 @@ namespace Physics {
 	}
 
 	void PhysicsWorld::Step(float dt) {
-		int subSteps = 8;
+		int subSteps = 12;
 		float subDt = dt / subSteps;
 
 		int solverIterations = 4;
@@ -178,7 +178,7 @@ namespace Physics {
 			glm::vec3 vn = glm::dot(body->vel, best.normal) * best.normal;
 			glm::vec3 vt = body->vel - vn;
 			if (glm::dot(body->vel, best.normal) < 0.f)
-				body->vel = (vt * 0.99f) - (vn * 0.0f);
+				body->vel = (vt * 0.95f);	// 마찰계수 조절
 		}
 	}
 
@@ -196,6 +196,7 @@ namespace Physics {
 		float overlap = (r1 + r2) - dist;
 
 		if (overlap > 0.0f) {
+			// 합치기 확인 영역
 			if (b1->fruitLevel != -1 && b1->fruitLevel == b2->fruitLevel) {
 				// 마지막 레벨(수박)은 합쳐지지 않음 (보통 사라지게 하거나 유지)
 				if (b1->fruitLevel < 10) {
@@ -228,20 +229,20 @@ namespace Physics {
 				}
 			}
 
-			glm::vec3 n = (dist < 1e-4f) ? glm::vec3(0, 1, 0) : glm::normalize(p1->pos - p2->pos);
+			glm::vec3 normal = (dist < 1e-4f) ? glm::vec3(0, 1, 0) : glm::normalize(p1->pos - p2->pos);
 			float invM = p1->mass_inv + p2->mass_inv;
 
 			glm::vec3 relVel = p1->vel - p2->vel;
-			float vn = glm::dot(relVel, n);
+			float vn = glm::dot(relVel, normal);
 			if (vn > 0.0f) return;
 
-			float restitution = 0.01f;
+			float restitution = 0.001f;
 			float j = -(1.0f + restitution) * vn / invM;
-			glm::vec3 imp = j * n;
+			glm::vec3 imp = j * normal;
 			p1->vel += imp * p1->mass_inv;
 			p2->vel -= imp * p2->mass_inv;
 
-			glm::vec3 t = relVel - n * vn;
+			glm::vec3 t = relVel - normal * vn;
 			if (glm::length(t) > 1e-4f) {
 				t = glm::normalize(t);
 				float jt = -glm::dot(relVel, t) / invM;
@@ -253,14 +254,26 @@ namespace Physics {
 				p1->vel += fImp * p1->mass_inv;
 				p2->vel -= fImp * p2->mass_inv;
 			}
-			float percent = 0.9f;
-			float slop = 0.001f; // 허용 침투 깊이 (이만큼은 겹쳐도 봐줌)
+			float percent = 0.3f;
+			float slop = 0.005f;
 
 			float correctionMag = std::max(overlap - slop, 0.0f) / invM * percent;
 
-			glm::vec3 correction = n * correctionMag;
+			glm::vec3 correction = normal * correctionMag;
 			p1->pos += correction * p1->mass_inv;
 			p2->pos -= correction * p2->mass_inv;
+
+			float vA = glm::dot(p1->vel, normal);
+			float vB = glm::dot(p2->vel, normal);
+
+			float vnA = vA;
+			float vnB = vB;
+
+			if (vnA > 0.0f) vnA = 0.0f;
+			if (vnB < 0.0f) vnB = 0.0f;
+
+			p1->vel -= normal * vnA;
+			p2->vel -= normal * vnB;
 		}
 	}
 
