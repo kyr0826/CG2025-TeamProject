@@ -11,11 +11,10 @@ namespace Graphics {
 
 		glGenVertexArrays(1, &VAO);
 		glGenBuffers(1, &VBO);
-		glGenBuffers(1, &EBO);
 
 		glBindVertexArray(VAO);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, vertex_count * sizeof(Vertex), vertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
 		glEnableVertexAttribArray(0);
@@ -24,31 +23,25 @@ namespace Graphics {
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, uv));
 		glEnableVertexAttribArray(2);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, face_count * sizeof(Face), faces, GL_STATIC_DRAW);
-
 		glBindVertexArray(0);
 	}
 
-	Model::~Model() {
-		if (vertices) free(vertices);
-		if (faces) free(faces);
-	}
+	Model::~Model() { }
 
 	void Model::SetModelMatrix(const glm::mat4& modelMatrix) { this->modelMatrix = modelMatrix; }
 
 	void Model::Render() {
 		glBindVertexArray(VAO);
 		GLuint id = model_shader->GetShaderProgramID();
-
-		glUniform3fv(glGetUniformLocation(id, "lightPos"), 1, glm::value_ptr(LIGHT_POSITION));
-		glUniform3fv(glGetUniformLocation(id, "lightColor"), 1, glm::value_ptr(LIGHT_COLOR));
-		glUniformMatrix4fv(glGetUniformLocation(id, "model"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+		model_shader->SetVec3("lightPos", LIGHT_POSITION);
+		model_shader->SetVec3("lightColor", LIGHT_COLOR);
+		model_shader->SetMat4("model", modelMatrix);
 
 		glm::mat4 normalMat = glm::transpose(glm::inverse(modelMatrix));
-		glUniformMatrix4fv(glGetUniformLocation(id, "normalMat"), 1, GL_FALSE, glm::value_ptr(normalMat));
+		model_shader->SetMat4("normalMat", normalMat);
 
-		glDrawElements(GL_TRIANGLES, face_count * 3, GL_UNSIGNED_INT, 0);
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+		glBindVertexArray(0);
 	}
 
 	/// <summary>
@@ -56,16 +49,16 @@ namespace Graphics {
 	/// </summary>
 	void Model::Recenter() {
 		glm::vec3 minPos(FLT_MAX), maxPos(-FLT_MAX);
-		for (size_t i = 0; i < vertex_count; ++i) {
+		for (size_t i = 0; i < vertices.size(); ++i) {
 			minPos = glm::min(minPos, vertices[i].pos);
 			maxPos = glm::max(maxPos, vertices[i].pos);
 		}
 
 		glm::vec3 center = (minPos + maxPos) * 0.5f;
-		for (size_t i = 0; i < vertex_count; ++i) vertices[i].pos -= center;
+		for (size_t i = 0; i < vertices.size(); ++i) vertices[i].pos -= center;
 
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, vertex_count * sizeof(Vertex), vertices);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex), &vertices[0]);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
@@ -74,7 +67,7 @@ namespace Graphics {
 	/// </summary>
 	float Model::GetExactRadius() {
 		float maxDistSq = 0.0f;
-		for (size_t i = 0; i < vertex_count; ++i) {
+		for (size_t i = 0; i < vertices.size(); ++i) {
 			float d = glm::dot(vertices[i].pos, vertices[i].pos);
 			if (d > maxDistSq) maxDistSq = d;
 		}
@@ -88,8 +81,8 @@ namespace Graphics {
 
 		char line[256];
 
-		vertex_count = 0;
-		face_count = 0;
+		size_t vertex_count = 0;
+		size_t face_count = 0;
 		size_t normal_count = 0;
 		size_t uv_count = 0;
 
@@ -103,8 +96,7 @@ namespace Graphics {
 		}
 		fseek(file, 0, SEEK_SET);
 
-		vertices = (Vertex*)calloc(vertex_count, sizeof(Vertex));
-		faces = (Face*)calloc(face_count, sizeof(Face));
+		glm::vec3* temp_v = (glm::vec3*)calloc(vertex_count, sizeof(glm::vec3));
 		glm::vec3* temp_n = (glm::vec3*)calloc(normal_count, sizeof(glm::vec3));
 		glm::vec2* temp_uv = (glm::vec2*)calloc(uv_count, sizeof(glm::vec2));
 
@@ -113,16 +105,19 @@ namespace Graphics {
 			ReadNewLine(line);
 
 			if (line[0] == 'v' && line[1] == ' ') {
-				sscanf_s(line + 2, "%f %f %f", &vertices[v_idx].pos.x, &vertices[v_idx].pos.y, &vertices[v_idx].pos.z);
+				sscanf_s(line + 2, "%f %f %f", &temp_v[v_idx].x, &temp_v[v_idx].y, &temp_v[v_idx].z);
 				v_idx++;
+				continue;
 			}
 			else if (line[0] == 'v' && line[1] == 'n') {
 				sscanf_s(line + 2, "%f %f %f", &temp_n[n_idx].x, &temp_n[n_idx].y, &temp_n[n_idx].z);
 				n_idx++;
+				continue;
 			}
 			else if (line[0] == 'v' && line[1] == 't') {
 				sscanf_s(line + 2, "%f %f", &temp_uv[uv_idx].x, &temp_uv[uv_idx].y);
 				uv_idx++;
+				continue;
 			}
 			else if (line[0] == 'f' && line[1] == ' ') {
 				unsigned int v[3], vt[3], vn[3];
@@ -139,23 +134,43 @@ namespace Graphics {
 					vt[0] = vt[1] = vt[2] = 0;
 				}
 
-				faces[f_idx].v1 = v[0] - 1;
-				faces[f_idx].v2 = v[1] - 1;
-				faces[f_idx].v3 = v[2] - 1;
-
-				if (vn[0] > 0) vertices[v[0] - 1].normal = temp_n[vn[0] - 1];
-				if (vn[1] > 0) vertices[v[1] - 1].normal = temp_n[vn[1] - 1];
-				if (vn[2] > 0) vertices[v[2] - 1].normal = temp_n[vn[2] - 1];
-
-				if (vt[0] > 0) vertices[v[0] - 1].uv = temp_uv[vt[0] - 1];
-				if (vt[1] > 0) vertices[v[1] - 1].uv = temp_uv[vt[1] - 1];
-				if (vt[2] > 0) vertices[v[2] - 1].uv = temp_uv[vt[2] - 1];
-
-				f_idx++;
+				for (int i = 0; i < 3; ++i) {
+					Vertex vertex = {
+						temp_v[v[i] - 1],
+						temp_n[vn[i] - 1],
+						temp_uv[vt[i] - 1],
+					};
+					vertices.push_back(vertex);
+				}
 			}
 		}
 		fclose(file);
+
+		free(temp_v);
 		free(temp_n);
 		free(temp_uv);
+
+		if (strstr(fileName, "Fruit") || strstr(fileName, "Fruit")) {
+			for (auto& v : vertices) {
+				v.normal = glm::normalize(v.pos);
+			}
+		}
+		else {
+			for (size_t i = 0; i < vertices.size(); i += 3) {
+				glm::vec3& p0 = vertices[i + 0].pos;
+				glm::vec3& p1 = vertices[i + 1].pos;
+				glm::vec3& p2 = vertices[i + 2].pos;
+
+				glm::vec3 N = glm::normalize(glm::cross(p1 - p0, p2 - p0));
+
+				vertices[i + 0].normal += N;
+				vertices[i + 1].normal += N;
+				vertices[i + 2].normal += N;
+			}
+
+			for (auto& v : vertices) {
+				v.normal = glm::normalize(v.normal);
+			}
+		}
 	}
 }
