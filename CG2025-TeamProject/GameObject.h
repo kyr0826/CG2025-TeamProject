@@ -31,6 +31,8 @@ namespace Objects {
 
 		void SetTexture(GLuint texID) { textureID = texID; }
 
+		void SetBillboard(bool v) { billBoard = v; }
+
 		void RenderModel(Camera& camera);
 
 		void PlayMergeAnimation();
@@ -45,7 +47,7 @@ namespace Objects {
 		glm::vec3 model_scale;
 		glm::vec3 origin_model_scale;
 		glm::vec3 model_color;
-
+		bool billBoard;
 		GLuint textureID = 0;
 
 		float animate_time{};

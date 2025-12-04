@@ -1,4 +1,5 @@
 #include "GameObject.h"
+#include "../Dependencies/glm/gtc/quaternion.hpp"
 
 namespace Objects {
 	GameObject::GameObject(std::string name, Physics_Body* physics, Model* model, Shader* shader) :
@@ -8,6 +9,7 @@ namespace Objects {
 		model_color = glm::vec3(.85f);
 
 		textureID = 0;
+		billBoard = false;
 
 		model->SetShader(shader);
 	}
@@ -20,8 +22,7 @@ namespace Objects {
 	void GameObject::RenderModel(Camera& camera) {
 		shader->Activate();
 		GLuint id = shader->GetShaderProgramID();
-
-		glUniform3fv(glGetUniformLocation(shader->GetShaderProgramID(), "objectColor"), 1, glm::value_ptr(model_color));
+		shader->SetVec3("objectColor", model_color);
 
 		if (this->textureID != 0) {
 			glActiveTexture(GL_TEXTURE0);
@@ -34,6 +35,30 @@ namespace Objects {
 		glm::mat4 T = glm::translate(glm::mat4(1.0f), physics->pos);
 		glm::mat4 R = glm::mat4(1.0f);
 		glm::mat4 S = glm::scale(glm::mat4(1.0f), model_scale);
+
+		if (billBoard)
+		{
+			glm::vec3 camPos = camera.Position;
+
+			glm::vec3 target = glm::vec3(0, 0, 0);
+			glm::vec3 forward = glm::normalize(target - camPos);
+			glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
+			glm::vec3 up = glm::cross(right, forward);
+
+			glm::vec3 finalPos = 
+				camPos 
+				+ forward * READY_FRUIT_OFFSET.z
+				+ right * READY_FRUIT_OFFSET.x
+				+ up * READY_FRUIT_OFFSET.y;
+			T = glm::translate(glm::mat4(1.0f), finalPos);
+
+			glm::mat4 billboardRot = glm::mat4(1.0f);
+			billboardRot[0] = glm::vec4(right, 0);
+			billboardRot[1] = glm::vec4(up, 0);
+			billboardRot[2] = glm::vec4(-forward, 0);
+			
+			R = billboardRot;
+		}
 
 		// OpenGL = T R S 모델 ( 순서 : <- )
 		model->SetModelMatrix(T * R * S);
