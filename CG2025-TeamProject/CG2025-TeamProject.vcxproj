@@ -130,6 +130,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="fragment.glsl" />
+    <None Include="traj_frag.glsl" />
+    <None Include="traj_vert.glsl" />
     <None Include="vertex.glsl" />
   </ItemGroup>
   <ItemGroup>

@@ -63,10 +63,15 @@ float g_spawn_timer = 0.0f;			// 다음 과일 생성까지의 시간 카운터
 GameObject* readyFruit = nullptr;
 
 // 궤적 렌더링용
+GLuint g_trajVAO = 0;
+GLuint g_trajVBO = 0;
+Shader* trajectoryShader = nullptr;
+
 std::vector<glm::vec3> trajectoryPoints;
 
 int g_total_Score = 0;
 bool g_isGameOver = false;
+
 
 void main(int argc, char** argv) {
 	glutInit(&argc, argv);
@@ -76,6 +81,10 @@ void main(int argc, char** argv) {
 	glutCreateWindow("Physics_Test");
 	glewExperimental = GL_TRUE;
 	glewInit();
+
+	trajectoryShader = new Shader("traj_frag.glsl", "traj_vert.glsl");
+	glGenVertexArrays(1, &g_trajVAO);
+	glGenBuffers(1, &g_trajVBO);
 
 	common_shader = new Shader("fragment.glsl", "vertex.glsl");
 
@@ -147,16 +156,6 @@ GLvoid DrawScene() {
 	for (auto obj : renderObjects)
 		obj->RenderModel(*main_camera);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(45.0f, (float)WINDOW_WIDTH / WINDOW_HEIGHT, 0.1f, 100.0f);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(main_camera->Position.x, main_camera->Position.y, main_camera->Position.z,
-		0, 0, 0,
-		0, 1, 0);
-
 	DrawTrajectory();
 
 	glutSwapBuffers();
@@ -211,6 +210,7 @@ GLvoid Keyboard(unsigned char key, int x, int y) {
 		if (readyFruit) {
 			Physics_Body* body = readyFruit->GetPhysicsBody();
 			body->vel = CalculateLaunchVelocity();
+			readyFruit->SetBillboard(false);
 			readyFruit->SetAcceleration(glm::vec3(0, -GRAVITY, 0));
 
 			physicsWorld->AddBall(readyFruit);
@@ -234,9 +234,9 @@ GLvoid Keyboard(unsigned char key, int x, int y) {
 		g_launch_pitch = std::min(g_launch_pitch + 2.0f, 68.0f);
 		break;
 
-	case 's': 
-	case 'S': 
-		g_launch_pitch = std::max(g_launch_pitch - 2.0f, 14.0f); 
+	case 's':
+	case 'S':
+		g_launch_pitch = std::max(g_launch_pitch - 2.0f, 14.0f);
 		break;
 
 	case 'h':
@@ -263,8 +263,12 @@ glm::vec3 CalculateLaunchPosition() {
 	glm::vec3 target = glm::vec3(0, 0, 0);
 	glm::vec3 forward = glm::normalize(target - camPos);
 	glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
+	glm::vec3 up = glm::cross(right, forward);
 
-	glm::vec3 offset = (forward * 3.5f) + (right * -0.2f) + glm::vec3(0, -1.6f, 0);
+	glm::vec3 offset =
+		(forward * READY_FRUIT_OFFSET.z) +
+		(right * READY_FRUIT_OFFSET.x) +
+		(up * READY_FRUIT_OFFSET.y);
 
 	return camPos + offset;
 }
@@ -306,18 +310,38 @@ void DrawTrajectory() {
 	if (trajectoryPoints.size() < 2) return;
 	if (g_spawn_timer > 0.0f) return;
 
-	glUseProgram(0);
+	trajectoryShader->Activate();
+
+	glm::mat4 view = glm::lookAt(
+		main_camera->Position,
+		glm::vec3(0, 0, 0),
+		main_camera->Up
+	);
+
+	glm::mat4 proj = glm::perspective(
+		glm::radians(45.0f),
+		(float)main_camera->width / (float)main_camera->height,
+		0.1f,
+		100.0f
+	);
+
+	trajectoryShader->SetMat4("view", view);
+	trajectoryShader->SetMat4("projection", proj);
+	trajectoryShader->SetVec3("lineColor", glm::vec3(0.2, 0.9f, 1.0f));
+
+	glBindVertexArray(g_trajVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, g_trajVBO);
+
+	glBufferData(GL_ARRAY_BUFFER, trajectoryPoints.size() * sizeof(glm::vec3), trajectoryPoints.data(), GL_DYNAMIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
 
 	glLineWidth(4.0f);
-	glColor3f(.2f, .9f, 1.0f); // 빨간색 선
+	glDrawArrays(GL_LINE_STRIP, 0, trajectoryPoints.size());
+	glLineWidth(1.0f);
 
-	glBegin(GL_LINE_STRIP); // 끊어지지 않는 선
-	for (const auto& p : trajectoryPoints) {
-		glVertex3fv(glm::value_ptr(p));
-	}
-	glEnd();
-
-	glLineWidth(1.0f); // 두께 원복
+	glBindVertexArray(0);
 }
 
 void SpawnReadyFruit() {
@@ -330,8 +354,10 @@ void SpawnReadyFruit() {
 
 	readyFruit->SetScale(glm::vec3(info.scale));
 	// readyFruit->SetTexture(TextureManager::GetInstance().GetTexture(info.name));
+	readyFruit->SetTexture(TextureManager::GetInstance().GetTexture("Apple"));
 	readyFruit->SetModelColor(info.color);
 	readyFruit->fruitLevel = info.level;
+	readyFruit->SetBillboard(true);
 	renderObjects.push_back(readyFruit);
 }
 
@@ -349,6 +375,7 @@ void OnFruitMerge(int nextLevel, glm::vec3 pos) {
 	newFruit->SetScale(glm::vec3(info.scale));
 	newFruit->SetModelColor(info.color);
 	// newFruit->SetTexture(TextureManager::GetInstance().GetTexture(info.name));
+	newFruit->SetTexture(TextureManager::GetInstance().GetTexture("Apple"));
 	newFruit->fruitLevel = nextLevel;
 	newFruit->PlayMergeAnimation();
 
