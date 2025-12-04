@@ -24,6 +24,10 @@ const float SPAWN_DELAY 			= 0.5f;		// 다음 과일 생성까지의 지연 시�
 
 const glm::vec3 READY_FRUIT_OFFSET	= glm::vec3(-0.2f, -1.6f, 5.0f);
 
+// 접시 상수
+const float DISH_Y_OFFSET			= -1.5f;
+const float DISH_SCALE				= 2.0f;
+
 // 애니메이션 상수
 const float MERGE_ANIMATION_TIME = 0.2f;		// 병합 애니메이션 시간
 

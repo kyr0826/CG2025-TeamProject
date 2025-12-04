@@ -123,8 +123,8 @@ void main(int argc, char** argv) {
 
 void CreateDish() {
 	GameObject* dish = new GameObject("Dish", new Physics_Body(0.0f), dish_model, common_shader);
-	dish->SetPosition(glm::vec3(0, -1.5f, 0));
-	dish->SetScale(glm::vec3(3.0f));
+	dish->SetPosition(glm::vec3(0, DISH_Y_OFFSET, 0));
+	dish->SetScale(glm::vec3(DISH_SCALE));
 
 	GLuint dishTextureID = TextureManager::GetInstance().GetTexture("Dish");
 	if (dishTextureID != 0) { dish->SetTexture(dishTextureID); }
@@ -355,6 +355,7 @@ void SpawnReadyFruit() {
 	readyFruit->SetScale(glm::vec3(info.scale));
 	// readyFruit->SetTexture(TextureManager::GetInstance().GetTexture(info.name));
 	readyFruit->SetTexture(TextureManager::GetInstance().GetTexture("Apple"));
+	readyFruit->SetTexture(TextureManager::GetInstance().GetTexture(info.name));
 	readyFruit->SetModelColor(info.color);
 	readyFruit->fruitLevel = info.level;
 	readyFruit->SetBillboard(true);
@@ -376,6 +377,7 @@ void OnFruitMerge(int nextLevel, glm::vec3 pos) {
 	newFruit->SetModelColor(info.color);
 	// newFruit->SetTexture(TextureManager::GetInstance().GetTexture(info.name));
 	newFruit->SetTexture(TextureManager::GetInstance().GetTexture("Apple"));
+	newFruit->SetTexture(TextureManager::GetInstance().GetTexture(info.name));
 	newFruit->fruitLevel = nextLevel;
 	newFruit->PlayMergeAnimation();
 
