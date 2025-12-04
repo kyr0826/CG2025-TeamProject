@@ -353,8 +353,6 @@ void SpawnReadyFruit() {
 	readyFruit = new GameObject(info.name, body, common_sphere_model, common_shader);
 
 	readyFruit->SetScale(glm::vec3(info.scale));
-	// readyFruit->SetTexture(TextureManager::GetInstance().GetTexture(info.name));
-	readyFruit->SetTexture(TextureManager::GetInstance().GetTexture("Apple"));
 	readyFruit->SetTexture(TextureManager::GetInstance().GetTexture(info.name));
 	readyFruit->SetModelColor(info.color);
 	readyFruit->fruitLevel = info.level;
@@ -375,8 +373,6 @@ void OnFruitMerge(int nextLevel, glm::vec3 pos) {
 	GameObject* newFruit = new GameObject(info.name, body, common_sphere_model, common_shader);
 	newFruit->SetScale(glm::vec3(info.scale));
 	newFruit->SetModelColor(info.color);
-	// newFruit->SetTexture(TextureManager::GetInstance().GetTexture(info.name));
-	newFruit->SetTexture(TextureManager::GetInstance().GetTexture("Apple"));
 	newFruit->SetTexture(TextureManager::GetInstance().GetTexture(info.name));
 	newFruit->fruitLevel = nextLevel;
 	newFruit->PlayMergeAnimation();

@@ -53,11 +53,34 @@ namespace Core {
 		std::cerr << "Texture not found: " << name << std::endl;
 		return 0; // 0은 보통 null 텍스처 ID
 	}
+	/*
+	"Blueberry",
+	"Cherry",   
+	"Plum",     
+	"Mandarin", 
+	"Persimmon",
+	"Apple",    
+	"Pear",     
+	"Peach",    
+	"Papaya",   
+	"Melon",    
+	"Watermelon"
+	*/
 
 	void TextureManager::Initialize() {
 		const std::vector<TextureInfo> init_textures = {
 			{"Dish", "Dish_Texture.png"},
-			{"Apple", "Apple_Texture.png"}
+			{"Blueberry", "Blueberry_Texture.png"},
+			{"Cherry", "Cherry_Texture.png"},
+			{"Plum", "Plum_Texture.png"},
+			{"Mandarin", "Mandarin_Texture.png"},
+			{"Persimmon", "Persimmon_Texture.png"},
+			{"Apple", "Apple_Texture.png"},
+			{"Pear", "Pear_Texture.png"},
+			{"Peach", "Peach_Texture.png"},
+			{"Papaya", "Papaya_Texture.png"},
+			{"Melon", "Melon_Texture.png"},
+			{"Watermelon", "Watermelon_Texture.png"},
 		};
 
 		for (const auto& info : init_textures) {
