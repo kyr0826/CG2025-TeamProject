@@ -35,3 +35,4 @@ const float MERGE_ANIMATION_TIME = 0.2f;		// 병합 애니메이션 시간
 const std::string MODEL_ROOT = "Resources/Model";
 const std::string SOUND_ROOT = "Resources/Sound";
 const std::string TEXTURE_ROOT = "Resources/Texture";
+const std::string SHADER_ROOT = "Resources/Shader";

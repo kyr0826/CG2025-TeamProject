@@ -6,8 +6,9 @@ namespace Graphics {
 		FILE* fptr;
 		long length;
 		char* buf;
+		std::string full_path = SHADER_ROOT + "/" + file;
 
-		fptr = fopen(file, "rb");			//--- 바이너리 모드로 파일 열기
+		fptr = fopen(full_path.c_str(), "rb");			//--- 바이너리 모드로 파일 열기
 		if (!fptr)							//--- 파일 열기 실패
 			return NULL;
 
