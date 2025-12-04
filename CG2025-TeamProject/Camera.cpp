@@ -17,13 +17,9 @@ namespace Graphics {
 			farPlane
 		);
 
-		GLuint v = glGetUniformLocation(shader.GetShaderProgramID(), "view");
-		GLuint p = glGetUniformLocation(shader.GetShaderProgramID(), "projection");
-		GLuint vp = glGetUniformLocation(shader.GetShaderProgramID(), "viewPos");
-
-		glUniformMatrix4fv(v, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(p, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(vp, 1, GL_FALSE, glm::value_ptr(Position));
+		shader.SetMat4("view", view);
+		shader.SetMat4("projection", projection);
+		shader.SetVec3("viewPos", Position);
 	}
 }
 
