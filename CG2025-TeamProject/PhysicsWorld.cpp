@@ -56,18 +56,18 @@ namespace Physics {
 			}
 		}
 
-		auto model = dish->GetModel();
-		auto verts = model->GetVertices();
-		auto faces = model->GetFaces();
+		Model* model = dish->GetModel();
+		const std::vector<Vertex> verts = model->GetVertices();
 		glm::mat4 trans = GetPhysicsTransform(dish);
 
-		size_t faceCount = model->GetFaceCount();
-		dishTriangles.reserve(faceCount);
+		size_t triCount = verts.size() / 3;
+		dishTriangles.reserve(triCount);
 
-		for (size_t i = 0; i < faceCount; ++i) {
-			glm::vec3 v0 = glm::vec3(trans * glm::vec4(verts[faces[i].v1].pos, 1.0f));
-			glm::vec3 v1 = glm::vec3(trans * glm::vec4(verts[faces[i].v2].pos, 1.0f));
-			glm::vec3 v2 = glm::vec3(trans * glm::vec4(verts[faces[i].v3].pos, 1.0f));
+		for (size_t i = 0; i < triCount; ++i) {
+			size_t idx = i * 3;
+			glm::vec3 v0 = glm::vec3(trans * glm::vec4(verts[idx + 0].pos, 1.0f));
+			glm::vec3 v1 = glm::vec3(trans * glm::vec4(verts[idx + 1].pos, 1.0f));
+			glm::vec3 v2 = glm::vec3(trans * glm::vec4(verts[idx + 2].pos, 1.0f));
 
 			glm::vec3 minBox = glm::min(v0, glm::min(v1, v2));
 			glm::vec3 maxBox = glm::max(v0, glm::max(v1, v2));
