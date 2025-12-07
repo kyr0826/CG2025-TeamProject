@@ -16,20 +16,18 @@
     <Filter Include="GLSL">
       <UniqueIdentifier>{0884be58-0b86-4e89-9b23-03a664043294}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="vertex.glsl">
-      <Filter>GLSL</Filter>
-    </None>
-    <None Include="fragment.glsl">
-      <Filter>GLSL</Filter>
-    </None>
-    <None Include="traj_vert.glsl">
-      <Filter>GLSL</Filter>
-    </None>
-    <None Include="traj_frag.glsl">
-      <Filter>GLSL</Filter>
-    </None>
+    <Filter Include="헤더 파일\씬">
+      <UniqueIdentifier>{de9bd047-b001-402f-893d-2569c60a52f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\씬">
+      <UniqueIdentifier>{74ca0337-9e17-40e6-b8ea-0b0e945f0565}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\매니저">
+      <UniqueIdentifier>{250941f4-214b-41d3-83e5-d7fd38cfe98f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\매니저">
+      <UniqueIdentifier>{f5f9fbd6-82d2-4c26-8fb5-7236c3a882e4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -65,17 +63,29 @@
     <ClCompile Include="EventSystem.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="GameManager.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="SoundManager.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureManager.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="LoadingScene.cpp">
+      <Filter>소스 파일\씬</Filter>
     </ClCompile>
     <ClCompile Include="UIManager.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\매니저</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureManager.cpp">
+      <Filter>소스 파일\매니저</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundManager.cpp">
+      <Filter>소스 파일\매니저</Filter>
+    </ClCompile>
+    <ClCompile Include="GameManager.cpp">
+      <Filter>소스 파일\매니저</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderManager.cpp">
+      <Filter>소스 파일\매니저</Filter>
+    </ClCompile>
+    <ClCompile Include="TitleScene.cpp">
+      <Filter>소스 파일\씬</Filter>
+    </ClCompile>
+    <ClCompile Include="GameOverScene.cpp">
+      <Filter>소스 파일\씬</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -115,17 +125,52 @@
     <ClInclude Include="EventSystem.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="GameManager.h">
+    <ClInclude Include="Scene.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="GameScene.h">
+      <Filter>헤더 파일\씬</Filter>
+    </ClInclude>
+    <ClInclude Include="TitleScene.h">
+      <Filter>헤더 파일\씬</Filter>
+    </ClInclude>
+    <ClInclude Include="LoadingScene.h">
+      <Filter>헤더 파일\씬</Filter>
+    </ClInclude>
+    <ClInclude Include="GameManager.h">
+      <Filter>헤더 파일\매니저</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneManager.h">
+      <Filter>헤더 파일\매니저</Filter>
     </ClInclude>
     <ClInclude Include="SoundManager.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\매니저</Filter>
     </ClInclude>
     <ClInclude Include="TextureManager.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\매니저</Filter>
     </ClInclude>
     <ClInclude Include="UIManager.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\매니저</Filter>
     </ClInclude>
+    <ClInclude Include="ShaderManager.h">
+      <Filter>헤더 파일\매니저</Filter>
+    </ClInclude>
+    <ClInclude Include="GameOverScene.h">
+      <Filter>헤더 파일\씬</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Shader\fragment.glsl">
+      <Filter>GLSL</Filter>
+    </None>
+    <None Include="Resources\Shader\traj_frag.glsl">
+      <Filter>GLSL</Filter>
+    </None>
+    <None Include="Resources\Shader\traj_vert.glsl">
+      <Filter>GLSL</Filter>
+    </None>
+    <None Include="Resources\Shader\vertex.glsl">
+      <Filter>GLSL</Filter>
+    </None>
   </ItemGroup>
 </Project>

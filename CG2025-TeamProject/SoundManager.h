@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <string>
+#include <vector>
 #include "../Dependencies/FMOD/inc/fmod.hpp"
 
 #ifdef _WIN64
@@ -24,6 +25,9 @@ namespace Core {
 		}
 		void Initialize();
 		void Play(const std::string name);
+		void Stop(const std::string name);
+		void StopAllSFX();
+		void StopBGM();
 		void Update();
 		void CleanUp();
 
@@ -32,6 +36,8 @@ namespace Core {
 
 		float GetBGMVolume() { return bgmVolume; }
 		float GetSFXVolume() { return sfxVolume; }
+
+		void LoadSound(std::string name, std::string path, bool isBGM);
 	private:
 		SoundManager();
 		~SoundManager() {}
@@ -47,10 +53,10 @@ namespace Core {
 		std::map<std::string, FMOD::Sound*> bgmList; // 배경음악 목록
 		std::map<std::string, FMOD::Sound*> sfxList; // 효과음 목록
 
+		std::map<std::string, std::vector<FMOD::Channel*>> activeChannels;
+
 		// --- 현재 볼륨 상태 (0.0 ~ 1.0) ---
 		float bgmVolume;
 		float sfxVolume;
-
-		void LoadSound(std::string name, std::string path, bool isBGM);
 	};
 }

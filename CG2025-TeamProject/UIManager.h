@@ -12,9 +12,18 @@ namespace Graphics {
 			return instance;
 		}
 
-		void Initialize(Shader* shader);
-		void Render(int windowWidth, int windowHeight);
+		void Initialize();
 
+		void RenderLoadingScene(int windowWidth, int windowHeight, int percent, int x, int y, float scale);
+		void RenderTitleScene(int windowWidth, int windowHeight);
+		void RenderGameScene(int windowWidth, int windowHeight);
+		void RenderGameOverScene(int windowWidth, int windowHeight);
+
+		// 기본 그리기 함수 (전체 이미지)
+		void RenderQuad(GLuint texID, float x, float y, float w, float h, glm::vec3 color = glm::vec3(1.0f), float rot = 0.0f);
+
+		// 숫자 그리기
+		void RenderNumber(int number, float x, float y, float scale);
 	private:
 		UIManager();
 		~UIManager();
@@ -25,11 +34,5 @@ namespace Graphics {
 		GLuint numTextures[10]; // 숫자 텍스처 ID 캐싱
 
 		void ConfigureQuad();
-
-		// 기본 그리기 함수 (전체 이미지)
-		void RenderQuad(GLuint texID, float x, float y, float w, float h, glm::vec3 color = glm::vec3(1.0f));
-
-		// 숫자 그리기
-		void RenderNumber(int number, float x, float y, float scale);
 	};
 }

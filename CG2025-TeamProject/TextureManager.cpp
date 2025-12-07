@@ -67,7 +67,7 @@ namespace Core {
 	"Watermelon"
 	*/
 
-	void TextureManager::Initialize() {
+	/*void TextureManager::Initialize() {
 		const std::vector<TextureInfo> init_textures = {
 			{"Dish", "Dish_Texture.png"},
 			{"Blueberry", "Blueberry_Texture.png"},
@@ -99,7 +99,7 @@ namespace Core {
 			std::string path = TEXTURE_ROOT + "/" + name + ".png";
 			LoadTexture(name, path.c_str());
 		}
-	}
+	}*/
 
 	void TextureManager::CleanUp() {
 		for (auto const& iter : textures) { glDeleteTextures(1, &iter.second); }

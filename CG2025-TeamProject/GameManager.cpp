@@ -1,5 +1,11 @@
+#include <memory>
+
 #include "GameManager.h"
+#include "SoundManager.h"
 #include "EventSystem.h"
+
+#include "SceneManager.h"
+#include "GameOverScene.h"
 
 namespace Core {
 	void GameManager::AddScore(int score) {
@@ -9,7 +15,9 @@ namespace Core {
 
 	void GameManager::GameStart() {
 		EventSystem::GetInstance().PublishGameState(curGameState, GameState::Playing);
+		SettingStartFruit();
 		curGameState = GameState::Playing;
+		score = 0;
 	}
 
 	void GameManager::GamePause() {
@@ -27,6 +35,12 @@ namespace Core {
 			return;
 
 		EventSystem::GetInstance().PublishGameState(curGameState, GameState::GameOver);
+
 		curGameState = GameState::GameOver;
+
+		if (highScore < score)
+			highScore = score;
+
+		SceneManager::GetInstance().ChangeScene(std::make_shared<GameOverScene>());
 	}
 }

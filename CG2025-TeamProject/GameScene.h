@@ -1,6 +1,8 @@
 #pragma once
-#include "Scene.h"
 #include <vector>
+#include <memory>
+
+#include "Scene.h"
 
 #include "GameObject.h"
 #include "PhysicsWorld.h"
@@ -10,6 +12,8 @@
 #include "SoundManager.h"
 #include "EventSystem.h"
 #include "TitleScene.h"
+#include "UIManager.h"
+#include "ShaderManager.h"
 
 class GameScene : public Scene {
 public:
@@ -49,10 +53,10 @@ public:
 
 	void OnEnter() override {
 		std::cout << "GameScene Enter" << std::endl;
-		Core::SoundManager::GetInstance().Play("BGM");
-		common_shader = new Shader("fragment.glsl", "vertex.glsl");
+		Core::SoundManager::GetInstance().Play("InGame");
+		common_shader = ShaderManager::GetInstance().GetShader("common_shader");
 
-		main_camera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT, glm::vec3(0, CAMERA_Y, CAMERA_DISTANCE));
+		main_camera = Core::GameManager::GetInstance().GetGameCamera();
 
 		physicsWorld = new PhysicsWorld();
 		physicsWorld->SetMergeCallback(
@@ -60,7 +64,7 @@ public:
 		physicsWorld->SetRemoveCallback(
 			std::bind(&GameScene::OnObjectRemove, this, std::placeholders::_1));
 
-		trajectoryShader = new Shader("traj_frag.glsl", "traj_vert.glsl");
+		trajectoryShader = ShaderManager::GetInstance().GetShader("trajectory_shader");
 		glGenVertexArrays(1, &g_trajVAO);
 		glGenBuffers(1, &g_trajVBO);
 
@@ -68,15 +72,12 @@ public:
 	}
 	void OnExit() override {
 		std::cout << "GameScene Exit" << std::endl;
-
-		for (auto* obj : renderObjects)
-			delete obj;
+		Core::SoundManager::GetInstance().StopBGM();
+		/*for (auto* obj : renderObjects)
+			delete obj;*/
 
 		renderObjects.clear();
 
-		delete common_shader;
-		delete trajectoryShader;
-		delete main_camera;
 		delete physicsWorld;
 	}
 
@@ -123,19 +124,17 @@ public:
 			obj->RenderModel(*main_camera);
 
 		DrawTrajectory();
+
+		Graphics::UIManager::GetInstance().RenderGameScene(main_camera->width, main_camera->height);
 	}
 
 	void HandleInput(unsigned char key) override {
 		switch (key) {
-		case 'q':
-			SceneManager::GetInstance().ChangeScene(std::make_shared<TitleScene>());
+		case KEY_ESC:
+			Core::GameManager::GetInstance().GameOver();
 			break;
 
-		case 'r':
-			SceneManager::GetInstance().ChangeScene(std::make_shared<GameScene>());
-			break;
-
-		case 32: // Space: 발사
+		case KEY_SPACE: // Space: 발사
 		{
 			if (Core::GameManager::GetInstance().GetCurrentGameState() == Core::GameState::GameOver) return;
 			if (readyFruit) {
@@ -147,6 +146,7 @@ public:
 				physicsWorld->AddBall(readyFruit);
 				g_spawn_timer = SPAWN_DELAY;
 				readyFruit = nullptr;
+				Core::GameManager::GetInstance().UpdateFruit();
 			}
 		}
 		break;
@@ -157,25 +157,27 @@ public:
 		case 'D':
 			if (Core::GameManager::GetInstance().GetCurrentGameState() == Core::GameState::GameOver) return;
 			g_launch_yaw += ((key == 'a' || key == 'A') ? -1 : 1) * CAMERA_ROTATION_SPEED;
-			Core::EventSystem::GetInstance().PublishSound("Camera_Rotate.wav");
+			Core::SoundManager::GetInstance().Play("Rotate");
 			break;
 
 		case 'w':
 		case 'W':
 			if (Core::GameManager::GetInstance().GetCurrentGameState() == Core::GameState::GameOver) return;
 			g_launch_pitch = std::min(g_launch_pitch + 2.0f, 68.0f);
+			Core::SoundManager::GetInstance().Play("Rotate");
 			break;
 
 		case 's':
 		case 'S':
 			if (Core::GameManager::GetInstance().GetCurrentGameState() == Core::GameState::GameOver) return;
 			g_launch_pitch = std::max(g_launch_pitch - 2.0f, 14.0f);
+			Core::SoundManager::GetInstance().Play("Rotate");
 			break;
 		}
 	}
 
 	void SpawnReadyFruit() {
-		Core::FruitInfo info = Core::GameManager::GetInstance().GetCurrentFruit();
+		Core::FruitInfo info = Core::GameManager::GetInstance().CurFruit();
 
 		Physics_Body* body = new Physics_Body(info.mass);
 		body->colliderRadius = common_sphere_radius;
@@ -192,9 +194,6 @@ public:
 
 private:
 	void InitGame() {
-		glGenVertexArrays(1, &g_trajVAO);
-		glGenBuffers(1, &g_trajVBO);
-
 		common_sphere_model = new Model("Fruit_Model.obj");
 		common_sphere_model->Recenter();
 		common_sphere_radius = common_sphere_model->GetExactRadius() * 0.98f;
@@ -236,7 +235,8 @@ private:
 	void OnObjectRemove(GameObject* obj) {
 		auto it = std::remove(renderObjects.begin(), renderObjects.end(), obj);
 		renderObjects.erase(it, renderObjects.end());
-		delete obj; // 메모리 해제
+
+		//delete obj; // 메모리 해제
 	}
 
 	glm::vec3 CalculateLaunchPosition() {

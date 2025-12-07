@@ -1,5 +1,7 @@
 #include "PhysicsWorld.h"
 #include "EventSystem.h"
+#include "SoundManager.h"
+#include "GameManager.h"
 
 using namespace Core;
 
@@ -20,6 +22,9 @@ namespace Physics {
 		int solverIterations = 4;
 
 		for (int s = 0; s < subSteps; ++s) {
+			if (GameManager::GetInstance().GetCurrentGameState() == GameState::GameOver)
+				return;
+
 			UpdateBallGrid();
 
 			for (auto ball : balls) {
@@ -196,10 +201,17 @@ namespace Physics {
 		float overlap = (r1 + r2) - dist;
 
 		if (overlap > 0.0f) {
-			// 합치기 확인 영역
 			if (b1->fruitLevel != -1 && b1->fruitLevel == b2->fruitLevel) {
-				// 마지막 레벨(수박)은 합쳐지지 않음 (보통 사라지게 하거나 유지)
-				if (b1->fruitLevel < 10) {
+				if (b1->fruitLevel == 10) {
+					pendingRemoval.push_back(b1);
+					pendingRemoval.push_back(b2);
+
+					int curScore = GameManager::GetInstance().GetScore();
+					GameManager::GetInstance().AddScore(curScore);
+
+					SoundManager::GetInstance().Play("Merge");
+				}
+				else {
 					// 병합 이벤트 등록
 					MergeEvent ev;
 					ev.a = b1;
@@ -213,18 +225,12 @@ namespace Physics {
 					pendingRemoval.push_back(b1);
 					pendingRemoval.push_back(b2);
 
-					// 1. 점수: (다음 레벨 + 1) * 10점
 					int scoreToAdd = (ev.nextLevel + 1) * 10;
+					GameManager::GetInstance().AddScore(scoreToAdd);
+
+					SoundManager::GetInstance().Play("Merge");
+
 					
-					EventSystem::GetInstance().PublishScore(scoreToAdd);
-
-					// 2. 사운드: 팝 효과음 재생 요청
-					EventSystem::GetInstance().PublishSound("Merge");
-
-					// 3. 수박(레벨 10) 완성 시 게임 클리어/종료 처리 예시
-					if (ev.nextLevel == 10) {
-
-					}
 					return;
 				}
 			}
@@ -295,11 +301,11 @@ namespace Physics {
 
 		if (!pendingRemoval.empty()) {
 			for (auto obj : pendingRemoval) {
-				// [수정] erase-remove idiom을 정확하게 사용하여 물리 리스트에서 영구 제거
 				balls.erase(std::remove(balls.begin(), balls.end(), obj), balls.end());
 
-				// 메인(렌더링) 쪽에 삭제 요청
 				if (onRemove) onRemove(obj);
+
+				delete obj;
 			}
 			pendingRemoval.clear();
 		}

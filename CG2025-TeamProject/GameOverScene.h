@@ -1,7 +1,7 @@
 #pragma once
 #include "Scene.h"
 
-class TitleScene : public Scene {
+class GameOverScene : public Scene {
 public:
 	void OnEnter() override;
 

@@ -18,13 +18,14 @@ namespace Core {
 		TextureManager(const TextureManager&) = delete;
 		TextureManager& operator=(const TextureManager&) = delete;
 		GLuint GetTexture(const std::string& name);
-		void Initialize();
+		//void Initialize();
+
+		bool LoadTexture(const std::string& name, const char* path);
 	private:
 		std::map<std::string, GLuint> textures;
 		TextureManager() {}
 		~TextureManager() { CleanUp(); }
-
-		bool LoadTexture(const std::string& name, const char* path);
+		
 		void CleanUp();
 	};
 }

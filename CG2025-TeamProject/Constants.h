@@ -3,12 +3,15 @@
 const int WINDOW_WIDTH				= 1280;
 const int WINDOW_HEIGHT				= 720;
 
+const int KEY_SPACE					= 32;
+const int KEY_ESC					= 27;
+
 // 계산용
 const float M_PI					= 3.14159265358979323846f;
 const float GRAVITY					= 9.81f;
 
 // 카메라 상수
-const float CAMERA_DISTANCE			= 7.0f;
+const float CAMERA_DISTANCE			= 10.0f;
 const float CAMERA_ROTATION_SPEED	= 5.0f;
 const float CAMERA_Y				= 3.0f;
 
@@ -17,7 +20,7 @@ const glm::vec3 LIGHT_POSITION		= glm::vec3(0.0f, 10.0f, 0.0f);
 const glm::vec3 LIGHT_COLOR			= glm::vec3(1.0f, 1.0f, 1.0f);
 
 // 발사 상수
-const float LAUNCH_FORCE			= 5.0f;
+const float LAUNCH_FORCE			= 7.0f;
 const int TRAJECTORY_POINTS_COUNT	= 30;		// 궤적 점 개수
 const float TRAJECTORY_TIME_STEP	= 0.05f;	// 점 사이의 시간 간격
 const float SPAWN_DELAY 			= 0.5f;		// 다음 과일 생성까지의 지연 시간
@@ -26,7 +29,7 @@ const glm::vec3 READY_FRUIT_OFFSET	= glm::vec3(-0.2f, -1.6f, 5.0f);
 
 // 접시 상수
 const float DISH_Y_OFFSET			= -1.5f;
-const float DISH_SCALE				= 2.0f;
+const float DISH_SCALE				= 2.5f;
 
 // 애니메이션 상수
 const float MERGE_ANIMATION_TIME = 0.2f;		// 병합 애니메이션 시간

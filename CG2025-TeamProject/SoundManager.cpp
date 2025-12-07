@@ -9,31 +9,41 @@ namespace Core {
 		// 볼륨 제어를 위한 채널 그룹 생성
 		system->createChannelGroup("BGM", &bgmGroup);
 		system->createChannelGroup("SFX", &sfxGroup);
-
-		const std::vector<SoundInfo> init_sounds = {
-			{"BGM", "Background_music.mp3", true},
-			{"Merge", "jump.mp3", false}
-		};
-
-		for (const auto& info : init_sounds) {
-			std::string full_path = SOUND_ROOT + "/" + info.path;
-			LoadSound(info.name, full_path, info.isBGM);
-		}
 	}
 	void SoundManager::Play(const std::string name) {
 		// 1. BGM 목록에서 검색 -> bgmGroup으로 재생
 		if (bgmList.find(name) != bgmList.end()) {
 			system->playSound(bgmList[name], bgmGroup, false, &channel);
+			activeChannels[name].clear();
+			activeChannels[name].push_back(channel);
 			return;
 		}
 
 		// 2. SFX 목록에서 검색 -> sfxGroup으로 재생
 		if (sfxList.find(name) != sfxList.end()) {
 			system->playSound(sfxList[name], sfxGroup, false, &channel);
+			activeChannels[name].push_back(channel);
 			return;
 		}
 
 		std::cout << "Sound Not Found: " << name << std::endl;
+	}
+
+	void SoundManager::Stop(const std::string name) {
+		if (activeChannels.find(name) == activeChannels.end()) return;
+
+		for (auto* ch : activeChannels[name]) {
+			if (ch) ch->stop();
+		}
+		activeChannels[name].clear();
+	}
+
+	void SoundManager::StopAllSFX() {
+		if (sfxGroup) sfxGroup->stop();
+	}
+
+	void SoundManager::StopBGM() {
+		if (bgmGroup) bgmGroup->stop();
 	}
 
 	void SoundManager::Update() {
