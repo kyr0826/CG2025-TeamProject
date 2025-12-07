@@ -137,7 +137,7 @@ void InitResources() {
 
 	TextureManager::GetInstance().Initialize();
 	SoundManager::GetInstance().Initialize();
-	Graphics::UIManager::GetInstance().Initialize();
+	Graphics::UIManager::GetInstance().Initialize(common_shader);
 }
 
 GLvoid DrawScene() {

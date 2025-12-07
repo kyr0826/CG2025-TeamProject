@@ -14,8 +14,10 @@ uniform sampler2D outTexture;
 uniform int useTexture;	
 // 0 : 텍스처 없음 ( object color 사용 )
 // 1 : 텍스처 있음
+uniform int isUI;
 
 void main(void)  { 
+
 	// Ambient
 	float ambientStrength = 0.3;
 	vec3 ambient = ambientStrength * lightColor;
@@ -40,6 +42,11 @@ void main(void)  {
 	} else {
 		baseColor = texture(outTexture, TexCoord);
 	}
+
+	if (isUI == 1) {
+        FragColor = baseColor;
+        return; 
+    }
 
 	vec3 result = (ambient + diffuse + specular) * baseColor.rgb;
 	FragColor = vec4(result, 1.0);
