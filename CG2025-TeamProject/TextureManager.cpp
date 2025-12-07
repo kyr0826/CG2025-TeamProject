@@ -81,11 +81,23 @@ namespace Core {
 			{"Papaya", "Papaya_Texture.png"},
 			{"Melon", "Melon_Texture.png"},
 			{"Watermelon", "Watermelon_Texture.png"},
+			{"UI_Back", "UI.png"}
 		};
 
 		for (const auto& info : init_textures) {
 			std::string full_path = TEXTURE_ROOT + "/" + info.path;
 			LoadTexture(info.name, full_path.c_str());
+		}
+
+		for (int i = 0; i <= 9; ++i) {
+			std::string path = TEXTURE_ROOT + "/" + std::to_string(i) + ".png";
+			LoadTexture(std::to_string(i), path.c_str());
+		}
+
+		for (int i = 0; i <= 10; ++i) {
+			std::string name = "Fruit_" + std::to_string(i);
+			std::string path = TEXTURE_ROOT + "/" + name + ".png";
+			LoadTexture(name, path.c_str());
 		}
 	}
 

@@ -38,6 +38,9 @@ public:
 		return instance;  
 	}  
 
+	const FruitInfo& GetNextFruitInfo() const { return nextFruit; }
+	const FruitInfo& GetCurrentFruitInfo() const { return curFruit; }
+
 	void AddScore(int score);  
 
 	void GameStart();  

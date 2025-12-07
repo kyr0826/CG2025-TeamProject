@@ -10,6 +10,7 @@
 #include "GameManager.h"
 #include "TextureManager.h"
 #include "SoundManager.h"
+#include "UIManager.h"
 
 using namespace Graphics;
 using namespace Objects;
@@ -145,6 +146,7 @@ void InitResources() {
 
 	TextureManager::GetInstance().Initialize();
 	SoundManager::GetInstance().Initialize();
+	Graphics::UIManager::GetInstance().Initialize(common_shader);
 }
 
 GLvoid DrawScene() {
@@ -157,6 +159,8 @@ GLvoid DrawScene() {
 		obj->RenderModel(*main_camera);
 
 	DrawTrajectory();
+
+	Graphics::UIManager::GetInstance().Render(main_camera->width, main_camera->height);
 
 	glutSwapBuffers();
 }
