@@ -93,6 +93,15 @@ namespace Graphics {
 
 		// 2. 다음 과일 그리기 (개별 이미지 사용)
 		float nextSize = 60.0f;
+
+
+
+		// 오프셋 조정해서 화면에 맞추기
+		float xOffset = 135.0f;
+		float yOffset = 165.0f;
+
+
+
 		float nextX = windowWidth - 135.0f;
 		float nextY = windowHeight - 165.0f;
 
@@ -106,8 +115,21 @@ namespace Graphics {
 		}
 
 		// 3. 점수 그리기
-		RenderNumber(currentScore, 120.0f, windowHeight - 80.0f, 30.0f);
-		RenderNumber(highScore, 120.0f, windowHeight - 120.0f, 30.0f);
+
+
+
+		// 오프셋 조정해서 화면에 맞추기
+		float currenScireOffset = 80.0f;
+		float highScoreOffset = 120.0f;
+
+		// 글자 크기 조절
+		float currenScireScale = 30.0f;
+		float highScoreScale = 30.0f;
+
+
+
+		RenderNumber(currentScore, 120.0f, windowHeight - currenScireOffset, currenScireScale);
+		RenderNumber(highScore, 120.0f, windowHeight - 120.0f, highScoreScale);
 
 		// 복구
 		glUniform1i(glGetUniformLocation(prog, "isUI"), 0);

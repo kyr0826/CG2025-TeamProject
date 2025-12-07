@@ -1,7 +1,7 @@
 #pragma once
 // 윈도우 상수
-const int WINDOW_WIDTH				= 800;
-const int WINDOW_HEIGHT				= 600;
+const int WINDOW_WIDTH				= 1280;
+const int WINDOW_HEIGHT				= 720;
 
 // 계산용
 const float M_PI					= 3.14159265358979323846f;
