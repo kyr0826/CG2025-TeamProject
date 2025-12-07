@@ -2,6 +2,7 @@
 #include "GameObject.h"
 #include "CollisionUtils.h"
 #include "CommonUtils.h"
+#include <functional>
 
 using namespace Objects;
 
@@ -20,16 +21,16 @@ namespace Physics {
 
 	class PhysicsWorld {
 	public:
+		using MergeCallback = std::function<void(int, glm::vec3)>;
+		using RemoveCallback = std::function<void(GameObject*)>;
+
 		PhysicsWorld();
 		void AddBall(GameObject* ball);
 		void SetDish(GameObject* dish);
 		void Step(float dt);
 
-		using MergeCallback = void(*)(int level, glm::vec3 pos);
-		void SetMergeCallback(MergeCallback callback) { onMerge = callback; }
-
-		using RemoveCallback = void(*)(GameObject* obj);
-		void SetRemoveCallback(RemoveCallback callback) { onRemove = callback; }
+		void SetMergeCallback(const MergeCallback& callback) { onMerge = callback; }
+		void SetRemoveCallback(const RemoveCallback& callback) { onRemove = callback; }
 	private:
 		std::vector<GameObject*> balls;
 		GameObject* dish;

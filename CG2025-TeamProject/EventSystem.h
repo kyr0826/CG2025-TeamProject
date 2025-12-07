@@ -33,7 +33,9 @@ namespace Core {
 		void PublishScore(int score);
 		void PublishSound(const std::string& sound_url);
 		void PublishGameState(GameState current, GameState next);
-
+		void Clear() {
+			listeners.clear();
+		}
 	private:
 		EventSystem() {}
 

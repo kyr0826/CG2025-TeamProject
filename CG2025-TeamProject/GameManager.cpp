@@ -23,6 +23,9 @@ namespace Core {
 	}
 
 	void GameManager::GameOver() {
+		if (curGameState == GameState::GameOver)
+			return;
+
 		EventSystem::GetInstance().PublishGameState(curGameState, GameState::GameOver);
 		curGameState = GameState::GameOver;
 	}
