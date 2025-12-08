@@ -5,6 +5,7 @@
 #include "GameManager.h"
 
 void TitleScene::OnEnter() {
+	Core::SoundManager::GetInstance().StopBGM();
 	Core::SoundManager::GetInstance().Play("Title");
 }
 

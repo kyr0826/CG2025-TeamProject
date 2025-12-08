@@ -54,6 +54,7 @@ public:
 
 	void OnEnter() override {
 		std::cout << "GameScene Enter" << std::endl;
+		Core::SoundManager::GetInstance().StopBGM();
 		Core::SoundManager::GetInstance().Play("InGame");
 		common_shader = ShaderManager::GetInstance().GetShader("common_shader");
 
@@ -73,7 +74,6 @@ public:
 	}
 	void OnExit() override {
 		std::cout << "GameScene Exit" << std::endl;
-		Core::SoundManager::GetInstance().StopBGM();
 		/*for (auto* obj : renderObjects)
 			delete obj;*/
 
