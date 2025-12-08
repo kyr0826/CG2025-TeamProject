@@ -34,7 +34,7 @@ void main(int argc, char** argv) {
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	glutInitWindowPosition(50, 50);
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-	glutCreateWindow("Physics_Test");
+	glutCreateWindow("CG2025-TeamProject");
 	glewExperimental = GL_TRUE;
 	glewInit();
 
