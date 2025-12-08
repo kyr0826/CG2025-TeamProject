@@ -25,6 +25,7 @@ void LoadingScene::OnEnter() {
 		{"Title",		TEXTURE_ROOT + "/Title_BG.png"},
 		{"InGame",		TEXTURE_ROOT + "/InGame_BG.png"},
 		{"GameOver",		TEXTURE_ROOT + "/GameOver_BG.png"},
+		{"BG_Cube",		TEXTURE_ROOT + "/Game_BG_Texture.png"},
 	};
 
 	for (int i = 0; i <= 9; ++i) {

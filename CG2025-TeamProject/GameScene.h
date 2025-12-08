@@ -20,13 +20,14 @@ public:
 	Graphics::Shader* common_shader;
 	Graphics::Shader* trajectoryShader;
 	Graphics::Camera* main_camera;
-	Physics::PhysicsWorld* physicsWorld;
+	std::shared_ptr<Physics::PhysicsWorld> physicsWorld;
 
 	std::vector<Objects::GameObject*> renderObjects;
 
 	Model* common_sphere_model = nullptr;
 	float common_sphere_radius = 0.0f;
 	Model* dish_model = nullptr;
+	Model* bg_cube_model = nullptr;
 
 	float g_launch_pitch = 54.0f;			// 발사 각도 (높게 던져야 포물선이 예쁨)
 	float g_launch_yaw = 0.0f;				// 카메라 공전 각도
@@ -58,7 +59,7 @@ public:
 
 		main_camera = Core::GameManager::GetInstance().GetGameCamera();
 
-		physicsWorld = new PhysicsWorld();
+		physicsWorld = std::make_shared< Physics::PhysicsWorld>();
 		physicsWorld->SetMergeCallback(
 			std::bind(&GameScene::OnFruitMerge, this, std::placeholders::_1, std::placeholders::_2));
 		physicsWorld->SetRemoveCallback(
@@ -78,7 +79,7 @@ public:
 
 		renderObjects.clear();
 
-		delete physicsWorld;
+		//delete physicsWorld;
 	}
 
 	void Update(float deltaTime) override {
@@ -200,6 +201,14 @@ private:
 
 		dish_model = new Model("Dish.obj");
 		dish_model->Recenter();
+
+		bg_cube_model = new Model("GameBG_Cube.obj");
+		bg_cube_model->Recenter();
+
+		GameObject* bg_cube = new GameObject("BG_Cube", new Physics_Body(0.0f), bg_cube_model, common_shader);
+		bg_cube->SetScale(glm::vec3(10.0f));
+		bg_cube->SetTexture(Core::TextureManager::GetInstance().GetTexture("BG_Cube"));
+		renderObjects.push_back(bg_cube);
 
 		CreateDish();
 		SpawnReadyFruit();
